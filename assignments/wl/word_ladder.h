@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include <string>
 #include <forward_list>
+#include <vector>
 
 using namespace std;
 
@@ -26,8 +27,8 @@ unordered_set<string> getWordMap(const unordered_set<string> &words, const strin
 unordered_map<string, unordered_set<string>> getWordMapAll(const unordered_set<string> &words);
 
 /*
- * return the word ladder if any, null otherwise
+ * return the word ladders in sorted vector, size can be 0 when no ladder exists
  * */
-forward_list<string> computeLadder(unordered_set<string> words, string from, string to);
+vector<forward_list<string>> computeLadder(unordered_set<string> words, string from, string to);
 
 #endif  // ASSIGNMENTS_WL_WORD_LADDER_H_
