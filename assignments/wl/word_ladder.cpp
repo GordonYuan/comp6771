@@ -44,3 +44,13 @@ unordered_set<string> getWordMap(const unordered_set<string> &words, const strin
 
     return mappedSet;
 }
+
+unordered_map<string, unordered_set<string>> getWordMapAll(const unordered_set<string> &words) {
+    unordered_map<string, unordered_set<string>> map;
+
+    for (auto &word: words) {
+        map.insert({word, getWordMap(words, word)});
+    }
+
+    return map;
+}

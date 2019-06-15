@@ -35,7 +35,7 @@ SCENARIO("getWordMap") {
     WHEN("call getWordMap") {
         auto ladders = getWordMap(words, word);
         THEN("only abd, aec, fbc should be ladder, but not bec") {
-            for (auto it : ladders) {
+            for (const auto& it : ladders) {
                 std::cout<<it;
             }
             REQUIRE(ladders.size() == 3);
@@ -45,4 +45,48 @@ SCENARIO("getWordMap") {
             REQUIRE(ladders.find("bec") == ladders.end());
         }
     }
+}
+
+SCENARIO("getWordMapAll") {
+    unordered_set<string> words;
+    words.insert("abd");
+    words.insert("aec");
+    words.insert("fbc");
+    words.insert("bec");
+
+    string word = "abc";
+    WHEN("call getWordMapAll") {
+        auto map = getWordMapAll(words);
+
+        THEN("get a map of four elements") {
+            REQUIRE(map.size() == 4);
+        }
+
+        AND_WHEN("get the mapped values of abd") {
+            auto abd = map["abd"];
+
+            REQUIRE(abd.empty());
+        }
+
+        AND_WHEN("get the mapped values of aec") {
+            auto aec = map["aec"];
+
+            REQUIRE(aec.size() == 1);
+            REQUIRE(aec.find("bec") != aec.end());
+        }
+
+        AND_WHEN("get the mapped values of fbc") {
+            auto fbc = map["fbc"];
+
+            REQUIRE(fbc.empty());
+        }
+
+        AND_WHEN("get the mapped values of bec") {
+            auto bec = map["bec"];
+
+            REQUIRE(bec.size() == 1);
+            REQUIRE(bec.find("aec") != bec.end());
+        }
+    }
+
 }
