@@ -8,7 +8,18 @@
 
 */
 
+#include "lexicon.h"
 #include "assignments/wl/word_ladder.h"
 #include "catch.h"
 
-// TODO(students): Fill this in.
+SCENARIO("Filter a set") {
+    auto words = GetLexicon("assignments/wl/words.txt");
+    WHEN("filter words to the same length as word 'abc'") {
+        auto filteredWords = filterDissimilarWords(words, "abc");
+        THEN("all filtered words should has length 3") {
+            for (const string& word : filteredWords) {
+                REQUIRE(word.size() == 3);
+            }
+        }
+    }
+}
