@@ -15,6 +15,7 @@ unordered_set<string> filterDissimilarWords(const unordered_set<string>& words, 
 
 /*
  * return the unordered_set of words that is one distance to the given word
+ * for performance, it is assumed that all word in words have same size as the given word
  * */
 unordered_set<string> getWordMap(const unordered_set<string>& words, const string& word);
 
