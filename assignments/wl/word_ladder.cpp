@@ -1,7 +1,7 @@
 #include "assignments/wl/word_ladder.h"
 #include <iostream>
 
-static unordered_set<string> filterDissimilarWords(const unordered_set<string> &words, const string &word) {
+unordered_set<string> filterDissimilarWords(const unordered_set<string> &words, const string &word) {
     auto wordLength = word.size();
     unordered_set<string> filteredSet;
 
@@ -14,7 +14,7 @@ static unordered_set<string> filterDissimilarWords(const unordered_set<string> &
     return filteredSet;
 }
 
-static unordered_set<string> getWordMap(const unordered_set<string> &words, const string &word) {
+unordered_set<string> getWordMap(const unordered_set<string> &words, const string &word) {
     unordered_set<string> mappedSet;
 
     for (const string &wordInWords: words) {
@@ -46,7 +46,7 @@ static unordered_set<string> getWordMap(const unordered_set<string> &words, cons
     return mappedSet;
 }
 
-static unordered_map<string, unordered_set<string>> getWordMapAll(const unordered_set<string> &words) {
+unordered_map<string, unordered_set<string>> getWordMapAll(const unordered_set<string> &words) {
     unordered_map<string, unordered_set<string>> map;
 
     for (auto &word: words) {
@@ -72,12 +72,10 @@ vector<vector<string>> computeLadder(const unordered_set<string> &words, const s
 
 
     // compute words appeared until found to
-    vector<vector<string>> ladders;
     vector<unordered_set<string>> hops{unordered_set<string>{from}};
     unordered_set<string> visited;
     bool toFound = false;
     while (!toFound) {
-        cout << "finding..." << endl;
         unordered_set<string> nextHopWords;
         for (const string &word: hops.back()) {
             for (const string &oneHopWord : wordMap[word]) {
@@ -93,7 +91,8 @@ vector<vector<string>> computeLadder(const unordered_set<string> &words, const s
         } else {
             if (nextHopWords.empty()) {
                 // no solution, no more words can be found
-                return ladders;
+                vector<vector<string>> empty;
+                return empty;
             } else {
                 hops.push_back(nextHopWords);
             }
@@ -101,14 +100,14 @@ vector<vector<string>> computeLadder(const unordered_set<string> &words, const s
     }
 
     int i = 0;
-    cout << "hop size: " << hops.size() << endl;
-    for (auto hop: hops) {
-        cout << i++ << ": ";
-        for (auto word: hop) {
-            cout << word << " ";
-        }
-        cout << endl;
-    }
+//    cout << "hop size: " << hops.size() << endl;
+//    for (auto hop: hops) {
+//        cout << i++ << ": ";
+//        for (auto word: hop) {
+//            cout << word << " ";
+//        }
+//        cout << endl;
+//    }
 
     // filter words cant be reversely achieved from 'to'
     for (reverse_iterator fromHops = hops.rbegin(); (fromHops + 1) != hops.rend(); ++fromHops) {
@@ -130,15 +129,80 @@ vector<vector<string>> computeLadder(const unordered_set<string> &words, const s
         }
     }
 
-    i = 0;
-    cout << "hop size: " << hops.size() << endl;
-    for (auto hop: hops) {
-        cout << i++ << ": ";
-        for (auto word: hop) {
-            cout << word << " ";
+//    i = 0;
+//    cout << "hop size: " << hops.size() << endl;
+//    for (auto hop: hops) {
+//        cout << i++ << ": ";
+//        for (auto word: hop) {
+//            cout << word << " ";
+//        }
+//        cout << endl;
+//    }
+
+    // convert hops to one-to-many maps
+    unordered_map<string, unordered_set<string>> ladderMap;
+    for (auto itHops = hops.cbegin(); (itHops + 1) != hops.cend(); ++itHops) {
+        const unordered_set<string> &fromSet = *itHops;
+        const unordered_set<string> &toSet = *(itHops + 1);
+        for (const string &fromWord: fromSet) {
+            unordered_set<string> mappedSet;
+            for (const string &toWord: toSet) {
+                auto fullMap = wordMap[fromWord];
+                if (fullMap.find(toWord) != fullMap.end()) {
+                    mappedSet.insert(toWord);
+                }
+            }
+            ladderMap.insert({fromWord, mappedSet});
         }
-        cout << endl;
     }
+//    for (auto entry: ladderMap) {
+//        cout << entry.first << ": ";
+//        for (auto word: entry.second) {
+//            cout << word << " ";
+//        }
+//        cout << endl;
+//    }
+
+    // construct ladders
+    vector<vector<string>> ladders;
+    stack<string> stackDFS;
+    vector<string> ladderStack;
+    stackDFS.push(from);
+    bool ladderStackNeedFix = false;
+    while (! stackDFS.empty()) {
+        string next = stackDFS.top();
+        if (ladderStackNeedFix) {
+            // after a ladder is found, re-construct ladder stack
+            while (! ladderStack.empty()) {
+                string back = ladderStack.back();
+                auto map = ladderMap[back];
+                if (map.find(next) != map.end()) {
+                    break;
+                } else {
+                    ladderStack.pop_back();
+                }
+            }
+        }
+        ladderStack.push_back(next);
+        if (next == to) {
+            // a ladder is found
+            vector<string> ladder = ladderStack;
+            ladders.push_back(ladder);
+            ladderStackNeedFix = true;
+//            cout << "ladder: ";
+//            for (auto a:ladder) {
+//                cout << a << " ";
+//            }
+//            cout << endl;
+        }
+        stackDFS.pop();
+        for (const string &word: ladderMap[next]) {
+            stackDFS.push(word);
+        }
+    }
+
+    // sort ladders
+    // TODO add sort
 
     return ladders;
 }

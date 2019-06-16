@@ -20,9 +20,15 @@ int main() {
     to =   "data";
     from = "great";
     to =   "lucky";
+//    from = "michael";
+//    to =   "jackson";
+//    from = "prepares";
+//    to =   "contorts";
+//    from = "dauntlessness";
+//    to =   "dastardliness";
     auto ladders = computeLadder(lexicon, from, to);
     for (const auto &ladder : ladders) {
-        cout  << endl << "size: " << ladder.size() << endl;
+        cout << "ladder: ";
         for (const auto &word : ladder) {
             cout << word << " ";
         }
@@ -33,14 +39,6 @@ int main() {
 
 
     auto end = chrono::steady_clock::now();
-    cout << "Elapsed time in nanoseconds : "
-          << chrono::duration_cast<chrono::nanoseconds>(end - start).count()
-          << " ns" << endl;
-
-    cout << "Elapsed time in microseconds : "
-         << chrono::duration_cast<chrono::microseconds>(end - start).count()
-         << " µs" << endl;
-
     cout << "Elapsed time in milliseconds : "
          << chrono::duration_cast<chrono::milliseconds>(end - start).count()
          << " ms" << endl;
