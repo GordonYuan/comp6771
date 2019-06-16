@@ -1,2 +1,2 @@
-build --copt='-Werror' --copt='-pedantic' --copt='-Wall' --copt='-Wextra' --copt='-std=c++17' --incompatible_depset_union=false
+build --copt='-Werror' --copt='-pedantic' --copt='-Wall' --copt='-Wextra' --copt='-std=c++17' --incompatible_depset_union=false --copt='-Wno-error=unused'
 test --test_output=errors
