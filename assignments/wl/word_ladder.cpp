@@ -57,8 +57,10 @@ unordered_map<string, unordered_set<string>> getWordMapAll(const unordered_set<s
 }
 
 vector<vector<string>> computeLadder(const unordered_set<string> &words, const string &from, const string &to) {
+    vector<vector<string>> ladders;
     auto similarWords = filterDissimilarWords(words, from);
     auto wordMap = getWordMapAll(similarWords);
+
     // compute words appeared until found to
     vector<unordered_set<string>> hops{unordered_set<string>{from}};
     unordered_set<string> visited;
@@ -79,8 +81,7 @@ vector<vector<string>> computeLadder(const unordered_set<string> &words, const s
         } else {
             if (nextHopWords.empty()) {
                 // no solution, no more words can be found
-                vector<vector<string>> empty;
-                return empty;
+                return ladders;
             } else {
                 hops.push_back(nextHopWords);
             }
@@ -105,6 +106,9 @@ vector<vector<string>> computeLadder(const unordered_set<string> &words, const s
                 ++itToHops;
             }
         }
+        if (toHops.empty()) {
+            return ladders;
+        }
     }
 
     // convert hops to one-to-many maps
@@ -125,7 +129,6 @@ vector<vector<string>> computeLadder(const unordered_set<string> &words, const s
     }
 
     // construct ladders
-    vector<vector<string>> ladders;
     stack<string> stackDFS;
     vector<string> ladderStack;
     stackDFS.push(from);
