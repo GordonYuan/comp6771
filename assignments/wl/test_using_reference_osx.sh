@@ -62,7 +62,6 @@ function diff_test_length() {
 
 for NUMBER in {1..100}
 do
-    echo "Testing with length " ${LENGTH}
     for LENGTH in {2..22}
     do
         diff_test_length ${LENGTH}
