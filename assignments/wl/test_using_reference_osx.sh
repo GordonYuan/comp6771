@@ -7,7 +7,7 @@ INPUT_PATH=${A1}"/sh_test/input"
 cd ../../
 
 # compile my solution
-g++ ${A1}/main.cpp ${A1}/lexicon.cpp ${A1}/word_ladder.cpp -o ${A1}/my_solution_osx -O2 -std=c++17
+bazel build //assignments/wl:main
 
 # test with two words
 function diff_test() {
@@ -25,15 +25,46 @@ function diff_test() {
     local OUTPUT_MINE=${A1}"/sh_test/output/mine/"${NAME}
 
     # run given solution
+    echo "Running " ${NAME} " with reference_solution_osx"
     ./${A1}/reference_solution_osx < ${INPUT} > ${OUTPUT_REF}
 
     # run my solution
-    ./${A1}/my_solution_osx < ${INPUT} > ${OUTPUT_MINE}
+    echo "Running " ${NAME} " with my_solution_osx"
+    ./bazel-bin/assignments/wl/main < ${INPUT} > ${OUTPUT_MINE}
 
     # show difference
     diff ${OUTPUT_REF} ${OUTPUT_MINE} --ignore-all-space
+
+    # print if no diff
+    if [[ $? -eq 0 ]]; then
+        echo "No difference";
+    else
+        echo ${NAME} >> ${A1}/sh_test/log/difference.txt
+    fi
+    echo
 }
 
 
-diff_test code word
+# run diff_test with given word length
+# words will be picked randomly
+function diff_test_length() {
+    # generate words with exactly same length as given
+    local LENGTH=$1
+    cat ${A1}/words.txt | grep -x '.\{'${LENGTH}'\}' > ${A1}/sh_test/temp/temp.txt
 
+    # generate from and to randomly
+    local FROM=$(shuf -n 1 ${A1}/sh_test/temp/temp.txt)
+    local TO=$(shuf -n 1 ${A1}/sh_test/temp/temp.txt)
+
+    # call diff_test
+    diff_test ${FROM} ${TO}
+}
+
+for LENGTH in {2..22}
+do
+    echo "Testing with length " ${LENGTH}
+    for NUMBER in {1..20}
+    do
+        diff_test_length ${LENGTH}
+    done
+done

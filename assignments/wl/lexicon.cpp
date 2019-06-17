@@ -1,4 +1,4 @@
-#include "lexicon.h"
+#include "assignments/wl/lexicon.h"
 
 #include <algorithm>
 #include <cstdlib>

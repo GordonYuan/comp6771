@@ -1,8 +1,8 @@
 #include <iostream>
 #include <chrono>
 
-#include "lexicon.h"
-#include "word_ladder.h"
+#include "assignments/wl/lexicon.h"
+#include "assignments/wl/word_ladder.h"
 
 using namespace std;
 
