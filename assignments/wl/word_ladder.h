@@ -10,6 +10,7 @@
 #include <stack>
 #include <deque>
 #include <algorithm>
+#include <numeric>
 
 using namespace std;
 
@@ -31,8 +32,20 @@ unordered_set<string> getWordMap(const unordered_set<string> &words, const strin
 unordered_map<string, unordered_set<string>> getWordMapAll(const unordered_set<string> &words);
 
 /*
- * return the word ladders in sorted vector, size can be 0 when no ladder exists
+ * return the word ladders in vector, size can be 0 when no ladder exists
  * */
 vector<vector<string>> computeLadder(const unordered_set<string> &words, const string &from, const string &to);
+
+/*
+ * sort ladders in their lexicographic order
+ */
+void sortLadders(vector<vector<string>> &ladders);
+
+/*
+ * print ladders to stdout if there are ladders found
+ * print Each solution appears on a separate line. The very first one is printed after "Found ladder: "
+ * if no ladders found, print No ladder found.
+ */
+void printLadders(const vector<vector<string>> &ladders);
 
 #endif  // ASSIGNMENTS_WL_WORD_LADDER_H_

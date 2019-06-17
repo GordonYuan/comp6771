@@ -59,18 +59,6 @@ unordered_map<string, unordered_set<string>> getWordMapAll(const unordered_set<s
 vector<vector<string>> computeLadder(const unordered_set<string> &words, const string &from, const string &to) {
     auto similarWords = filterDissimilarWords(words, from);
     auto wordMap = getWordMapAll(similarWords);
-//    for (auto map: wordMap) {
-//        cout << endl << map.first << ": ";
-//        unordered_set<string> mapped;
-//        mapped = map.second;
-//        for (auto word: mapped) {
-//            cout << word << " ";
-//        }
-//    }
-
-    cout << "pre process done." << endl;
-
-
     // compute words appeared until found to
     vector<unordered_set<string>> hops{unordered_set<string>{from}};
     unordered_set<string> visited;
@@ -99,16 +87,6 @@ vector<vector<string>> computeLadder(const unordered_set<string> &words, const s
         }
     }
 
-    int i = 0;
-//    cout << "hop size: " << hops.size() << endl;
-//    for (auto hop: hops) {
-//        cout << i++ << ": ";
-//        for (auto word: hop) {
-//            cout << word << " ";
-//        }
-//        cout << endl;
-//    }
-
     // filter words cant be reversely achieved from 'to'
     for (reverse_iterator fromHops = hops.rbegin(); (fromHops + 1) != hops.rend(); ++fromHops) {
         unordered_set<string> &toHops = *(fromHops + 1);
@@ -129,16 +107,6 @@ vector<vector<string>> computeLadder(const unordered_set<string> &words, const s
         }
     }
 
-//    i = 0;
-//    cout << "hop size: " << hops.size() << endl;
-//    for (auto hop: hops) {
-//        cout << i++ << ": ";
-//        for (auto word: hop) {
-//            cout << word << " ";
-//        }
-//        cout << endl;
-//    }
-
     // convert hops to one-to-many maps
     unordered_map<string, unordered_set<string>> ladderMap;
     for (auto itHops = hops.cbegin(); (itHops + 1) != hops.cend(); ++itHops) {
@@ -155,13 +123,6 @@ vector<vector<string>> computeLadder(const unordered_set<string> &words, const s
             ladderMap.insert({fromWord, mappedSet});
         }
     }
-//    for (auto entry: ladderMap) {
-//        cout << entry.first << ": ";
-//        for (auto word: entry.second) {
-//            cout << word << " ";
-//        }
-//        cout << endl;
-//    }
 
     // construct ladders
     vector<vector<string>> ladders;
@@ -169,11 +130,11 @@ vector<vector<string>> computeLadder(const unordered_set<string> &words, const s
     vector<string> ladderStack;
     stackDFS.push(from);
     bool ladderStackNeedFix = false;
-    while (! stackDFS.empty()) {
+    while (!stackDFS.empty()) {
         string next = stackDFS.top();
         if (ladderStackNeedFix) {
             // after a ladder is found, re-construct ladder stack
-            while (! ladderStack.empty()) {
+            while (!ladderStack.empty()) {
                 string back = ladderStack.back();
                 auto map = ladderMap[back];
                 if (map.find(next) != map.end()) {
@@ -186,14 +147,8 @@ vector<vector<string>> computeLadder(const unordered_set<string> &words, const s
         ladderStack.push_back(next);
         if (next == to) {
             // a ladder is found
-            vector<string> ladder = ladderStack;
-            ladders.push_back(ladder);
+            ladders.push_back(ladderStack);
             ladderStackNeedFix = true;
-//            cout << "ladder: ";
-//            for (auto a:ladder) {
-//                cout << a << " ";
-//            }
-//            cout << endl;
         }
         stackDFS.pop();
         for (const string &word: ladderMap[next]) {
@@ -201,8 +156,36 @@ vector<vector<string>> computeLadder(const unordered_set<string> &words, const s
         }
     }
 
-    // sort ladders
-    // TODO add sort
-
     return ladders;
+}
+
+void sortLadders(vector<vector<string>> &ladders) {
+    auto ladderGreater = [](const vector<string> &ladder1, const vector<string> &ladder2) -> bool {
+        string s1 = accumulate(ladder1.cbegin(), ladder1.cend(), string(),
+                               [](string lhs, const string &rhs) { return lhs.empty() ? rhs : lhs + ' ' + rhs; }
+        );
+        string s2 = accumulate(ladder2.cbegin(), ladder2.cend(), string(),
+                               [](string lhs, const string &rhs) { return lhs.empty() ? rhs : lhs + ' ' + rhs; }
+        );
+        return s1 < s2;
+    };
+    sort(ladders.begin(), ladders.end(), ladderGreater);
+}
+
+void printLadders(const vector<vector<string>> &ladders) {
+    if (ladders.empty()) {
+        cout << "No ladder found." << '\n';
+    } else {
+        cout << "Found ladder: ";
+        auto join = [](const vector<string> &v) -> string {
+            return accumulate(v.cbegin(), v.cend(), string(),
+                              [](string lhs, const string &rhs) { return lhs.empty() ? rhs : lhs + ' ' + rhs; }
+            );
+        };
+        for (const auto &ladder : ladders) {
+            const string ladderString = join(ladder);
+            cout << ladderString << '\n';
+        }
+    }
+    cout << flush;
 }
