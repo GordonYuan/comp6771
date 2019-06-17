@@ -10,32 +10,33 @@ int main() {
     auto start = chrono::steady_clock::now();
 
     auto lexicon = GetLexicon("assignments/wl/words.txt");
-    cout << "data read" << endl;
 
-    auto from = "dauntlessness";
-    auto to =   "dastardliness";
-    from = "con";
-    to =   "cat";
-    from = "code";
-    to =   "data";
-    from = "great";
-    to =   "lucky";
+    string from, to;
+
+//    from = "con";
+//    to =   "cat";
+//    from = "code";
+//    to =   "data";
+//    from = "great";
+//    to =   "lucky";
 //    from = "michael";
 //    to =   "jackson";
 //    from = "prepares";
 //    to =   "contorts";
 //    from = "dauntlessness";
 //    to =   "dastardliness";
-    auto ladders = computeLadder(lexicon, from, to);
-    for (const auto &ladder : ladders) {
-        cout << "ladder: ";
-        for (const auto &word : ladder) {
-            cout << word << " ";
-        }
-        std::cout << '\n';
-    }
 
-    cout << "finish" << endl;
+    cout << "Enter start word (RETURN to quit): ";
+    cin >> from;
+    if (from == "RETURN") {
+        return 0;
+    }
+    cout << "Enter destination word: ";
+    cin >> to;
+
+    auto ladders = computeLadder(lexicon, from, to);
+    sortLadders(ladders);
+    printLadders(ladders);
 
 
     auto end = chrono::steady_clock::now();
