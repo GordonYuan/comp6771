@@ -1,4 +1,4 @@
-#include "assignments/wl/word_ladder.h"
+#include "word_ladder.h"
 #include <iostream>
 
 unordered_set<string> filterDissimilarWords(const unordered_set<string> &words, const string &word) {
