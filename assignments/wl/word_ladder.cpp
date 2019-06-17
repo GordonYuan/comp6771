@@ -57,6 +57,10 @@ unordered_map<string, unordered_set<string>> getWordMapAll(const unordered_set<s
 }
 
 vector<vector<string>> computeLadder(const unordered_set<string> &words, const string &from, const string &to) {
+    if (from == to) {
+        return vector<vector<string>>{{from, to}};
+    }
+
     vector<vector<string>> ladders;
     auto similarWords = filterDissimilarWords(words, from);
     auto wordMap = getWordMapAll(similarWords);

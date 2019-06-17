@@ -60,10 +60,10 @@ function diff_test_length() {
     diff_test ${FROM} ${TO}
 }
 
-for LENGTH in {2..22}
+for NUMBER in {1..100}
 do
     echo "Testing with length " ${LENGTH}
-    for NUMBER in {1..20}
+    for LENGTH in {2..22}
     do
         diff_test_length ${LENGTH}
     done
