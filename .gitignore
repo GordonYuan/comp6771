@@ -3,8 +3,8 @@ bazel-*
 .vscode/
 compile_commands.json
 test/
-assignments/wl/sh_test/input/
-assignments/wl/sh_test/log/
-assignments/wl/sh_test/output/mine/
-assignments/wl/sh_test/output/reference/
-assignments/wl/sh_test/temp/
+assignments/wl/sh_test/input/*
+assignments/wl/sh_test/log/*
+assignments/wl/sh_test/output/mine/*
+assignments/wl/sh_test/output/reference/*
+assignments/wl/sh_test/temp/*
