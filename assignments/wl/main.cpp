@@ -6,7 +6,7 @@
 using namespace std;
 
 int main() {
-    auto lexicon = GetLexicon("assignments/wl/words.txt");
+    unordered_set<string> lexicon = GetLexicon("assignments/wl/words.txt");
 
     // read inputs
     string from, to;

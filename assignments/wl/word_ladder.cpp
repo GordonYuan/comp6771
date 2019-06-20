@@ -1,17 +1,17 @@
 #include "word_ladder.h"
 #include <iostream>
 
-unordered_set<string> filterDissimilarWords(const unordered_set<string> &words, const string &word) {
+void filterDissimilarWords(unordered_set<string> &words, const string &word) {
     auto wordLength = word.size();
-    unordered_set<string> filteredSet;
 
-    for (const string &wordInWords: words) {
-        if (wordInWords.size() == wordLength) {
-            filteredSet.insert(wordInWords);
+    for (auto it = words.cbegin(); it != words.cend(); ) {
+        if ((*it).size() == wordLength) {
+            it = words.erase(it);
+        }
+        else {
+            ++it;
         }
     }
-
-    return filteredSet;
 }
 
 unordered_set<string> getWordMap(const unordered_set<string> &words, const string &word) {
@@ -47,7 +47,7 @@ unordered_set<string> getWordMap(const unordered_set<string> &words, const strin
 }
 
 unordered_map<string, unordered_set<string>> getWordMapAll(const unordered_set<string> &words) {
-    unordered_map<string, unordered_set<string>> map;
+    unordered_map<string, unordered_set<string>> map{};
 
     for (auto &word: words) {
         map.insert({word, getWordMap(words, word)});
@@ -56,14 +56,10 @@ unordered_map<string, unordered_set<string>> getWordMapAll(const unordered_set<s
     return map;
 }
 
-vector<vector<string>> computeLadder(const unordered_set<string> &words, const string &from, const string &to) {
-    if (from == to) {
-        return vector<vector<string>>{{from, to}};
-    }
-
+vector<vector<string>> computeLadder(unordered_set<string> &words, const string &from, const string &to) {
     vector<vector<string>> ladders;
-    auto similarWords = filterDissimilarWords(words, from);
-    auto wordMap = getWordMapAll(similarWords);
+    filterDissimilarWords(words, from);
+    auto wordMap = getWordMapAll(words);
 
     // compute words appeared until found to
     vector<unordered_set<string>> hops{unordered_set<string>{from}};
