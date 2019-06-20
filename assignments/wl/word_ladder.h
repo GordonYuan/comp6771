@@ -17,7 +17,7 @@ using namespace std;
 /*
  * return filtered set of words that is not as same length as the given word
  * */
-unordered_set<string> filterDissimilarWords(const unordered_set<string> &words, const string &word);
+void filterDissimilarWords(unordered_set<string> &words, const string &word);
 
 /*
  * return the unordered_set of words that is one distance to the given word
@@ -34,7 +34,7 @@ unordered_map<string, unordered_set<string>> getWordMapAll(const unordered_set<s
 /*
  * return the word ladders in vector, size can be 0 when no ladder exists
  * */
-vector<vector<string>> computeLadder(const unordered_set<string> &words, const string &from, const string &to);
+vector<vector<string>> computeLadder(unordered_set<string> &words, const string &from, const string &to);
 
 /*
  * sort ladders in their lexicographic order
