@@ -5,7 +5,7 @@ void filterDissimilarWords(unordered_set<string> &words, const string &word) {
     auto wordLength = word.size();
 
     for (auto it = words.cbegin(); it != words.cend(); ) {
-        if ((*it).size() == wordLength) {
+        if ((*it).size() != wordLength) {
             it = words.erase(it);
         }
         else {
