@@ -57,7 +57,9 @@ function diff_test_length() {
     local TO=$(shuf -n 1 ${A1}/sh_test/temp/temp.txt)
 
     # call diff_test
-    diff_test ${FROM} ${TO}
+    if [[ ${FROM} != ${TO} ]]; then
+        diff_test ${FROM} ${TO}
+    fi
 }
 
 for NUMBER in {1..100}
