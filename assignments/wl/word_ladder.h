@@ -2,6 +2,7 @@
 #define ASSIGNMENTS_WL_WORD_LADDER_H_
 
 #include <unordered_map>
+#include <map>
 #include <unordered_set>
 #include <string>
 #include <forward_list>
@@ -11,6 +12,7 @@
 #include <deque>
 #include <algorithm>
 #include <numeric>
+#include <utility>
 
 using namespace std;
 

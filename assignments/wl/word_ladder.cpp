@@ -1,6 +1,42 @@
 #include "word_ladder.h"
 #include <iostream>
 
+bool neighbour(const string &word1, const string &word2) {
+    bool differenceOccurred = false;
+    for (auto itChar1 = word1.cbegin(), itChar2 = word2.cbegin();
+         itChar1 != word1.cend(); ++itChar1, ++itChar2) {
+        if ((*itChar1) != (*itChar2)) {
+            // difference detected
+            if (differenceOccurred) {
+                // already detected a difference, no second difference allowed
+                // this word is not ladder
+                return false;
+            } else {
+                // record the first difference
+                differenceOccurred = true;
+            }
+        }
+    }
+    return differenceOccurred;
+}
+
+// fucking slow!
+//bool neighbour(const string &word1, const string &word2, map<pair<string, string>, bool> &cacheNeighbour) {
+//    auto result = cacheNeighbour.find(make_pair(word1, word2));
+//    if (result == cacheNeighbour.end()) {
+//        result = cacheNeighbour.find(make_pair(word2, word1));
+//    }
+//    if (result != cacheNeighbour.end()) {
+//        // cached
+//        return (*result).second;
+//    } else {
+//        // not cached, calculate and cache
+//        bool isNeighbour = neighbourCalculate(word1, word2);
+//        cacheNeighbour[make_pair(word2, word1)] = isNeighbour;
+//        return isNeighbour;
+//    }
+//}
+
 void filterDissimilarWords(unordered_set<string> &words, const string &word) {
     auto wordLength = word.size();
 
@@ -17,26 +53,7 @@ unordered_set<string> getWordMap(const unordered_set<string> &words, const strin
     unordered_set<string> mappedSet;
 
     for (const string &wordInWords: words) {
-        bool differenceOccurred = false;
-        bool isLadder = true;
-        for (auto itChar1 = wordInWords.cbegin(), itChar2 = word.cbegin();
-             itChar1 != wordInWords.cend(); ++itChar1, ++itChar2) {
-            if ((*itChar1) != (*itChar2)) {
-                // difference detected
-                if (differenceOccurred) {
-                    // already detected a difference, no second difference allowed
-                    // this word is not ladder
-                    isLadder = false;
-                    continue;
-                } else {
-                    // record the first difference
-                    differenceOccurred = true;
-                }
-            }
-        }
-        // ladder should have difference
-        isLadder &= differenceOccurred;
-        if (isLadder) {
+        if (neighbour(wordInWords, word)) {
             // this word is ladder, add to set
             mappedSet.insert(wordInWords);
         }
@@ -55,7 +72,7 @@ unordered_map<string, unordered_set<string>> getWordMapAll(const unordered_set<s
     return map;
 }
 
-vector<vector<string>> computeLadder(unordered_set<string> &words, const string &from, const string &to) {
+vector<vector<string>> computeLadderOld(unordered_set<string> &words, const string &from, const string &to) {
     vector<vector<string>> ladders;
     filterDissimilarWords(words, from);
     auto wordMap = getWordMapAll(words);
@@ -158,6 +175,309 @@ vector<vector<string>> computeLadder(unordered_set<string> &words, const string 
         }
     }
 
+    return ladders;
+}
+
+void filterMore(unordered_set<string> &words, const string &from, const string &to) {
+    queue<string> ladderQueue;
+    unordered_set<string> newWords;
+
+    ladderQueue.push(from);
+
+    while (!ladderQueue.empty()) {
+        string curr = ladderQueue.front();
+        ladderQueue.pop();
+        if (curr == to) {
+            words = newWords;
+            return;
+        } else {
+            auto it = words.begin();
+            while (it != words.end()) {
+                string word = *it;
+                if (neighbour(word, curr)) {
+                    ladderQueue.push(word);
+                    newWords.insert(word);
+                    it = words.erase(it);
+                } else {
+                    ++it;
+                }
+            }
+        }
+    }
+}
+
+// TODO swap these two
+unsigned short calculateMinHops(unordered_set<string> &words, const string &from, const string &to) {
+    unordered_map<string, unsigned short> depths;
+    queue<string> ladderQueue;
+    unordered_set<string> newWords;
+
+    depths.insert({from, 1});
+    ladderQueue.push(from);
+
+    while (!ladderQueue.empty()) {
+        string curr = ladderQueue.front();
+        ladderQueue.pop();
+        if (curr == to) {
+            filterMore(newWords, to, from);
+            words = newWords;
+            return depths[curr];
+        } else {
+            unsigned short nextDepth = depths[curr] + 1;
+            auto it = words.begin();
+            while (it != words.end()) {
+                string word = *it;
+                if (neighbour(word, curr)) {
+                    ladderQueue.push(word);
+                    depths.insert({word, nextDepth});
+                    newWords.insert(word);
+                    it = words.erase(it);
+                } else {
+                    ++it;
+                }
+            }
+        }
+    }
+
+    return 0;
+}
+
+vector<unordered_set<string>> getHops(unordered_set<string> &words, const string &from, const string &to) {
+    unordered_map<string, unsigned short> depths;
+    queue<string> ladderQueue;
+    unordered_set<string> newWords;
+
+    depths.insert({from, 1});
+    ladderQueue.push(from);
+    unsigned short minHops = 0;
+
+    while (!ladderQueue.empty()) {
+        string curr = ladderQueue.front();
+        ladderQueue.pop();
+        if (curr == to) {
+            minHops = depths[curr];
+        } else {
+            unsigned short nextDepth = depths[curr] + 1;
+            auto it = words.begin();
+            while (it != words.end()) {
+                string word = *it;
+                if (neighbour(word, curr)) {
+                    ladderQueue.push(word);
+                    depths.insert({word, nextDepth});
+                    newWords.insert(word);
+                    it = words.erase(it);
+                } else {
+                    ++it;
+                }
+            }
+        }
+    }
+
+    cout << "depths done" << endl;
+
+    vector<unordered_set<string>> hops;
+    for (unsigned short i = 0; i < minHops; ++i) {
+        hops.emplace_back(unordered_set<string>{});
+    }
+
+    cout << "size: " << hops.size() << endl;
+
+    // convert to hops
+    for (auto &entry: depths) {
+        const unsigned short depth = entry.second;
+        if (depth < minHops) {
+            const string &word = entry.first;
+//            cout << "[" << word << "." << depth << "]" << endl;
+            hops[depth - 1].insert(word);
+        }
+    }
+    hops[minHops - 1].insert(to);
+
+    cout << "convet done" << endl;
+    for (int i = 0; i < minHops; ++i) {
+        cout << "D " << i << ": ";
+        for (auto word: hops[i]) {
+            cout << word << " ";
+        }
+        cout << endl;
+    }
+
+    // filter words cant be reversely achieved from 'to'
+    for (reverse_iterator fromHops = hops.rbegin(); (fromHops + 1) != hops.rend(); ++fromHops) {
+        unordered_set<string> &toHops = *(fromHops + 1);
+        for (auto itToHops = toHops.begin(); itToHops != toHops.end();) {
+            bool canMapFromTo = false;
+            for (const string &fromWord : (*fromHops)) {
+                canMapFromTo = neighbour(fromWord, *itToHops);
+                if (canMapFromTo) {
+                    break;
+                }
+            }
+            if (!canMapFromTo) {
+                itToHops = toHops.erase(itToHops);
+            } else if (itToHops != toHops.end()) {
+                ++itToHops;
+            }
+        }
+        if (toHops.empty()) {
+            return vector<unordered_set<string>>{};
+        }
+    }
+
+    cout << "convet done" << endl;
+    for (int i = 0; i < minHops; ++i) {
+        cout << "D " << i << ": ";
+        for (auto word: hops[i]) {
+            cout << word << " ";
+        }
+        cout << endl;
+    }
+
+    cout << "exiting hops" << endl;
+    return hops;
+}
+
+void computeLadderRecursive(unordered_set<string> &words, const string &to, vector<string> &lStack,
+                            vector<vector<string>> &ladders, const unsigned short &minHops) {
+    const string curr = lStack.back();
+//    for (auto word: lStack) {
+//        cout << word << " ";
+//    }
+//    cout << ": " << lStack.size() <<  endl;
+    if (curr == to) {
+//        cout << "found " << endl;
+        ladders.push_back(lStack);
+//        lStack.pop_back();
+    } else if (lStack.size() < minHops) {
+        int i = 0;
+        for (const string &word: words) {
+            ++i;
+//            if (curr == "con") {
+//                cout << ":" << word;
+//            }
+            if (find(lStack.begin(), lStack.end(), word) == lStack.end() && neighbour(curr, word)) {
+//                if (curr == "con") {
+//                    cout << "::" << word << endl;
+//                }
+//                cout << "\t" << word << endl;
+                lStack.push_back(word);
+                computeLadderRecursive(words, to, lStack, ladders, minHops);
+                lStack.pop_back();
+            }
+        }
+    }
+}
+
+vector<vector<string>> computeLadder(unordered_set<string> &words, const string &from, const string &to) {
+    vector<vector<string>> ladders;
+    filterDissimilarWords(words, from);
+
+//    cout << "size: " << words.size() << endl;
+//    unsigned short minHops = calculateMinHops(words, from, to);
+    auto hops = getHops(words, from, to);
+    cout << "hops end" << endl;
+    unordered_set<string> newWords;
+    for (auto &hop: hops) {
+        for (const string &word: hop) {
+            newWords.insert(word);
+        }
+    }
+
+
+
+    // construct ladders
+    auto wordMap = getWordMapAll(newWords);
+
+
+    // convert hops to one-to-many maps
+    unordered_map<string, unordered_set<string>> ladderMap;
+    for (auto itHops = hops.cbegin(); (itHops + 1) != hops.cend(); ++itHops) {
+        const unordered_set<string> &fromSet = *itHops;
+        const unordered_set<string> &toSet = *(itHops + 1);
+        for (const string &fromWord: fromSet) {
+            unordered_set<string> mappedSet;
+            for (const string &toWord: toSet) {
+                auto fullMap = wordMap[fromWord];
+                if (fullMap.find(toWord) != fullMap.end()) {
+                    mappedSet.insert(toWord);
+                }
+            }
+            ladderMap.insert({fromWord, mappedSet});
+        }
+    }
+
+    stack<string> stackDFS;
+    vector<string> ladderStack;
+    stackDFS.push(from);
+    bool ladderStackNeedFix = false;
+    while (!stackDFS.empty()) {
+        string next = stackDFS.top();
+        if (ladderStackNeedFix) {
+            // after a ladder is found, re-construct ladder stack
+            while (!ladderStack.empty()) {
+                string back = ladderStack.back();
+                auto map = ladderMap[back];
+                if (map.find(next) != map.end()) {
+                    break;
+                } else {
+                    ladderStack.pop_back();
+                }
+            }
+        }
+        ladderStack.push_back(next);
+        if (next == to) {
+            // a ladder is found
+            ladders.push_back(ladderStack);
+            ladderStackNeedFix = true;
+        }
+        stackDFS.pop();
+        for (const string &word: ladderMap[next]) {
+            stackDFS.push(word);
+        }
+    }
+//    cout << "min : " << minHops << endl;
+//    cout << "size: " << words.size() << endl;
+
+//    for (auto word: words) {
+//        cout << word << endl;
+//    }
+
+//    vector<string> lStackTemp{from};
+//    computeLadderRecursive(words, to, lStackTemp, ladders, minHops);
+
+//    return computeLadderOld(words, from, to);
+
+
+    // construct ladders
+//    stack<string> stackDFS;
+//    vector<string> ladderStack;
+//    stackDFS.push(from);
+//    bool ladderStackNeedFix = false;
+//    while (!stackDFS.empty()) {
+//        string next = stackDFS.top();
+//        if (ladderStackNeedFix) {
+//            // after a ladder is found, re-construct ladder stack
+//            while (!ladderStack.empty()) {
+//                string back = ladderStack.back();
+//                if (neighbour(back, next)) {
+//                    break;
+//                } else {
+//                    ladderStack.pop_back();
+//                }
+//            }
+//        }
+//        ladderStack.push_back(next);
+//        if (next == to) {
+//            // a ladder is found
+//            ladders.push_back(ladderStack);
+//            ladderStackNeedFix = true;
+//        }
+//        stackDFS.pop();
+//        for (const string &word: newWords) {
+//            if (neighbour(word, next))
+//                stackDFS.push(word);
+//        }
+//    }
     return ladders;
 }
 
