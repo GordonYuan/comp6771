@@ -4,11 +4,10 @@
 void filterDissimilarWords(unordered_set<string> &words, const string &word) {
     auto wordLength = word.size();
 
-    for (auto it = words.cbegin(); it != words.cend(); ) {
+    for (auto it = words.cbegin(); it != words.cend();) {
         if ((*it).size() != wordLength) {
             it = words.erase(it);
-        }
-        else {
+        } else {
             ++it;
         }
     }
@@ -164,13 +163,8 @@ vector<vector<string>> computeLadder(unordered_set<string> &words, const string 
 
 void sortLadders(vector<vector<string>> &ladders) {
     auto ladderGreater = [](const vector<string> &ladder1, const vector<string> &ladder2) -> bool {
-        string s1 = accumulate(ladder1.cbegin(), ladder1.cend(), string(),
-                               [](string lhs, const string &rhs) { return lhs.empty() ? rhs : lhs + ' ' + rhs; }
-        );
-        string s2 = accumulate(ladder2.cbegin(), ladder2.cend(), string(),
-                               [](string lhs, const string &rhs) { return lhs.empty() ? rhs : lhs + ' ' + rhs; }
-        );
-        return s1 < s2;
+        return accumulate(ladder1.cbegin(), ladder1.cend(), string()) <
+               accumulate(ladder2.cbegin(), ladder2.cend(), string());
     };
     sort(ladders.begin(), ladders.end(), ladderGreater);
 }
@@ -180,14 +174,11 @@ void printLadders(const vector<vector<string>> &ladders) {
         cout << "No ladder found." << '\n';
     } else {
         cout << "Found ladder: ";
-        auto join = [](const vector<string> &v) -> string {
-            return accumulate(v.cbegin(), v.cend(), string(),
-                              [](string lhs, const string &rhs) { return lhs.empty() ? rhs : lhs + ' ' + rhs; }
-            );
-        };
         for (const auto &ladder : ladders) {
-            const string ladderString = join(ladder);
-            cout << ladderString << '\n';
+            for (const auto &word: ladder) {
+                cout << word << ' ';
+            }
+            cout << '\n';
         }
     }
     cout << flush;
