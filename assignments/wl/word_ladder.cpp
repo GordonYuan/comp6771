@@ -58,6 +58,7 @@ constructLadders(std::unordered_map<std::string, std::unordered_set<std::string>
 
 bool neighbour(const std::string &word1, const std::string &word2) {
     bool differenceOccurred = false;
+    // keep comparing until two differences occur or compared all characters
     for (auto itChar1 = word1.cbegin(), itChar2 = word2.cbegin();
          itChar1 != word1.cend(); ++itChar1, ++itChar2) {
         if ((*itChar1) != (*itChar2)) {
@@ -78,8 +79,10 @@ bool neighbour(const std::string &word1, const std::string &word2) {
 void filterDissimilarWords(std::unordered_set<std::string> &words, const std::string &word) {
     auto wordLength = word.size();
 
+    // look up all words and remove words with different length
     for (auto it = words.cbegin(); it != words.cend();) {
         if ((*it).size() != wordLength) {
+            // size differs, remove it
             it = words.erase(it);
         } else {
             ++it;
@@ -90,6 +93,7 @@ void filterDissimilarWords(std::unordered_set<std::string> &words, const std::st
 std::unordered_set<std::string> getWordMap(const std::unordered_set<std::string> &words, const std::string &word) {
     std::unordered_set<std::string> mappedSet;
 
+    // for each word, check if it is neighbour
     for (const std::string &wordInWords: words) {
         if (neighbour(wordInWords, word)) {
             // this word is ladder, add to set
@@ -104,6 +108,7 @@ std::unordered_map<std::string, std::unordered_set<std::string>>
 getWordMapAll(const std::unordered_set<std::string> &words) {
     std::unordered_map<std::string, std::unordered_set<std::string>> map{};
 
+    // for each word, make a map
     for (auto &word: words) {
         map.emplace(make_pair(word, getWordMap(words, word)));
     }
@@ -112,24 +117,30 @@ getWordMapAll(const std::unordered_set<std::string> &words) {
 }
 
 void filterReverseHops(std::vector<std::unordered_set<std::string>> &hops) {
-    // filter words cant be reversely achieved from 'to'
+    // filter words cant be reversely achieved from 'to', start from right side
     for (std::reverse_iterator fromHops = hops.rbegin(); (fromHops + 1) != hops.rend(); ++fromHops) {
         std::unordered_set<std::string> &toHops = *(fromHops + 1);
+        // for the hop level, check all previous hop level words
         for (auto itToHops = toHops.begin(); itToHops != toHops.end();) {
             bool canMapFromTo = false;
             for (const std::string &fromWord : (*fromHops)) {
+                // as long as there exist one word that can map to the previous hop word, end for loop
                 canMapFromTo = neighbour(fromWord, *itToHops);
                 if (canMapFromTo) {
                     break;
                 }
             }
             if (!canMapFromTo) {
+                // cannot map to previous hop level word, remove it
                 itToHops = toHops.erase(itToHops);
             } else if (itToHops != toHops.end()) {
                 ++itToHops;
             }
         }
         if (toHops.empty()) {
+            // as long as there exist one hop level that contains no words,
+            // 'from' word can never map to 'to' word.
+            // clear all hops and return immediately
             hops.clear();
             return;
         }
@@ -139,13 +150,15 @@ void filterReverseHops(std::vector<std::unordered_set<std::string>> &hops) {
 std::vector<std::unordered_set<std::string>>
 constructHops(const std::string &to, const std::unordered_map<std::string, unsigned short> &depths,
               unsigned short minHops) {
+    // hops starts with #minHops of empty sets
     std::vector<std::unordered_set<std::string>> hops(minHops, std::unordered_set<std::string>{});
 
+    // minHops == 0 means no possible hop exists
     if (!minHops) {
         return hops;
     }
 
-    // convert to hops
+    // convert to hops by depth map
     for (auto &entry: depths) {
         const unsigned short depth = entry.second;
         if (depth < minHops) {
@@ -153,8 +166,13 @@ constructHops(const std::string &to, const std::unordered_map<std::string, unsig
             hops[depth - 1].insert(word);
         }
     }
+
+    // the last hop will always be 'to'
     hops[minHops - 1].insert(to);
+
+    // filter unreachable words to improve ladder searching effeciency
     filterReverseHops(hops);
+
     return hops;
 }
 
@@ -163,19 +181,25 @@ getHops(std::unordered_set<std::string> &words, const std::string &from, const s
     std::unordered_map<std::string, unsigned short> depths;
     std::queue<std::string> ladderQueue;
 
+    // depth map, always starts with 'from'
     depths.insert({from, 1});
     ladderQueue.push(from);
     unsigned short minHops = 0;
 
+    // pure BFS algorithm, search until 'to' appears
     while (!ladderQueue.empty()) {
         std::string curr = ladderQueue.front();
         ladderQueue.pop();
         if (curr == to) {
+            // destination, 'to' appears. curr is the minimum hops required
             minHops = depths[curr];
             break;
         } else {
+            // keep searching and adding depth to next level of hops
             unsigned short nextDepth = depths[curr] + 1;
             auto it = words.begin();
+
+            // search all neighours current word can connect to and enqueue them
             while (it != words.end()) {
                 std::string word = *it;
                 if (neighbour(word, curr)) {
@@ -223,8 +247,12 @@ constructLadders(std::unordered_map<std::string, std::unordered_set<std::string>
     std::vector<std::vector<std::string>> ladders;
     std::stack<std::string> stackDFS;
     std::vector<std::string> ladderStack;
+
+    // starts from 'from'
     stackDFS.push(from);
     bool ladderStackNeedFix = false;
+
+    // iterative DFS algorithm to construct final ladders
     while (!stackDFS.empty()) {
         std::string next = stackDFS.top();
         if (ladderStackNeedFix) {
@@ -256,13 +284,19 @@ constructLadders(std::unordered_map<std::string, std::unordered_set<std::string>
 
 std::vector<std::vector<std::string>>
 computeLadder(std::unordered_set<std::string> &words, const std::string &from, const std::string &to) {
+    // filter words and reserve only those whose size are same with 'from'
+    // it is assumed that 'from' and 'to' have same size
     filterDissimilarWords(words, from);
+
+    // compute hops from filtered wrods
     std::vector<std::unordered_set<std::string>> hops = getHops(words, from, to);
 
+    // empty hops means no ladders, return empty vector
     if (hops.empty()) {
         return std::vector<std::vector<std::string>>{};
     }
 
+    // re-use word vector, to store filtered words in hops
     words.clear();
     for (auto &hop: hops) {
         for (const std::string &word: hop) {
@@ -270,15 +304,20 @@ computeLadder(std::unordered_set<std::string> &words, const std::string &from, c
         }
     }
 
+    // compute ladder map which is then used to construct final ladders
     std::unordered_map<std::string, std::unordered_set<std::string>> ladderMap = constructLadderMap(words, hops);
+
+    // compute and reuturn final ladders using ladder map
     return constructLadders(ladderMap, from, to);
 }
 
 void sortLadders(std::vector<std::vector<std::string>> &ladders) {
-    sort(ladders.begin(), ladders.end());
+    // simple, just call built in sort, which sorts vectors in order
+    std::sort(ladders.begin(), ladders.end());
 }
 
 void printLadders(const std::vector<std::vector<std::string>> &ladders) {
+    // prints ladders in specified format
     if (ladders.empty()) {
         std::cout << "No ladder found." << '\n';
     } else {
