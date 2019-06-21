@@ -20,8 +20,7 @@ SCENARIO("Find ladders", "[computeLadder]") {
   GIVEN("3 words which forms a ladder") {
     std::unordered_set<std::string> lexicon{"con", "can", "cat"};
     WHEN("search for ladders") {
-      std::vector<std::vector<std::string>> ladders =
-          computeLadder(lexicon, "con", "cat");
+      std::vector<std::vector<std::string>> ladders = computeLadder(lexicon, "con", "cat");
       THEN("one solution") {
         std::vector<std::vector<std::string>> solution{{"con", "can", "cat"}};
         REQUIRE(ladders == solution);
@@ -32,8 +31,7 @@ SCENARIO("Find ladders", "[computeLadder]") {
   GIVEN("3 words which forms a ladder") {
     std::unordered_set<std::string> lexicon{"con", "can", "cat"};
     WHEN("search for ladders") {
-      std::vector<std::vector<std::string>> ladders =
-          computeLadder(lexicon, "con", "cat");
+      std::vector<std::vector<std::string>> ladders = computeLadder(lexicon, "con", "cat");
       THEN("one solution") {
         std::vector<std::vector<std::string>> solution{{"con", "can", "cat"}};
         REQUIRE(ladders == solution);

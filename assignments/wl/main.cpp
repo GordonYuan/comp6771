@@ -6,8 +6,7 @@
 #include "assignments/wl/word_ladder.h"
 
 int main() {
-  std::unordered_set<std::string> lexicon =
-      GetLexicon("assignments/wl/words.txt");
+  std::unordered_set<std::string> lexicon = GetLexicon("assignments/wl/words.txt");
 
   // read inputs
   std::string from, to;
