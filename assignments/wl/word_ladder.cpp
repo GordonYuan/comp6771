@@ -160,7 +160,7 @@ constructHops(const std::string &to, const std::unordered_map<std::string, unsig
 
     // convert to hops by depth map
     for (auto &entry: depths) {
-        const unsigned short depth = entry.second;
+        const unsigned short &depth = entry.second;
         if (depth < minHops) {
             const std::string &word = entry.first;
             hops[depth - 1].insert(word);
@@ -188,7 +188,7 @@ getHops(std::unordered_set<std::string> &words, const std::string &from, const s
 
     // pure BFS algorithm, search until 'to' appears
     while (!ladderQueue.empty()) {
-        std::string curr = ladderQueue.front();
+        const std::string &curr = ladderQueue.front();
         ladderQueue.pop();
         if (curr == to) {
             // destination, 'to' appears. curr is the minimum hops required
@@ -201,7 +201,7 @@ getHops(std::unordered_set<std::string> &words, const std::string &from, const s
 
             // search all neighours current word can connect to and enqueue them
             while (it != words.end()) {
-                std::string word = *it;
+                const std::string &word = *it;
                 if (neighbour(word, curr)) {
                     ladderQueue.push(word);
                     depths.insert({word, nextDepth});
@@ -229,7 +229,7 @@ constructLadderMap(const std::unordered_set<std::string> &words,
         for (const std::string &fromWord: fromSet) {
             std::unordered_set<std::string> mappedSet;
             for (const std::string &toWord: toSet) {
-                auto fullMap = wordMap[fromWord];
+                const std::unordered_set<std::string> &fullMap = wordMap[fromWord];
                 if (fullMap.find(toWord) != fullMap.end()) {
                     mappedSet.insert(toWord);
                 }
@@ -254,12 +254,12 @@ constructLadders(std::unordered_map<std::string, std::unordered_set<std::string>
 
     // iterative DFS algorithm to construct final ladders
     while (!stackDFS.empty()) {
-        std::string next = stackDFS.top();
+        const std::string &next = stackDFS.top();
         if (ladderStackNeedFix) {
             // after a ladder is found, re-construct ladder stack
             while (!ladderStack.empty()) {
-                std::string back = ladderStack.back();
-                auto map = ladderMap[back];
+                const std::string &back = ladderStack.back();
+                const std::unordered_set<std::string> &map = ladderMap[back];
                 if (map.find(next) != map.end()) {
                     break;
                 } else {
@@ -288,7 +288,7 @@ computeLadder(std::unordered_set<std::string> &words, const std::string &from, c
     // it is assumed that 'from' and 'to' have same size
     filterDissimilarWords(words, from);
 
-    // compute hops from filtered wrods
+    // compute hops from filtered words
     std::vector<std::unordered_set<std::string>> hops = getHops(words, from, to);
 
     // empty hops means no ladders, return empty vector
