@@ -1,6 +1,57 @@
 #include "word_ladder.h"
 #include <iostream>
 
+/*
+ * return filtered set of words that is not as same length as the given word
+ * */
+void filterDissimilarWords(unordered_set<string> &words, const string &word);
+
+/*
+ * return the unordered_set of words that is one distance to the given word
+ * for performance, it is assumed that all word in words have same size as the given word
+ * */
+unordered_set<string> getWordMap(const unordered_set<string> &words, const string &word);
+
+/*
+ * return a map of all words that map to the unordered_set of one distance words
+ * for performance, it is assumed that all word in words have same size
+ * */
+unordered_map<string, unordered_set<string>> getWordMapAll(const unordered_set<string> &words);
+
+/*
+ * return true if word1 is exactly one letter different from word2, false otherwise
+ */
+bool neighbour(const string &word1, const string &word2);
+
+/*
+ * given a vector of hops, reversely filter words that are not achievable
+ */
+void filterReverseHops(vector<unordered_set<string>> &hops);
+
+/*
+ * construct and return a vector of hops using calculeted depth map
+ */
+vector<unordered_set<string>>
+constructHops(const string &to, const unordered_map<string, unsigned short> &depths, unsigned short minHops);
+
+/*
+ * calculate and return a vector of hops for given word dictionary
+ */
+vector<unordered_set<string>> getHops(unordered_set<string> &words, const string &from, const string &to);
+
+/*
+ * construct and return a ladder map for the small amount of hops
+ */
+unordered_map<string, unordered_set<string>>
+constructLadderMap(const unordered_set<string> &words, const vector<unordered_set<string>> &hops);
+
+/*
+ * construct and return all possible ladders using calculated ladder map
+ */
+vector<vector<string>>
+constructLadders(unordered_map<string, unordered_set<string>> &ladderMap, const string &from, const string &to);
+
+
 bool neighbour(const string &word1, const string &word2) {
     bool differenceOccurred = false;
     for (auto itChar1 = word1.cbegin(), itChar2 = word2.cbegin();
@@ -38,7 +89,7 @@ unordered_set<string> getWordMap(const unordered_set<string> &words, const strin
     for (const string &wordInWords: words) {
         if (neighbour(wordInWords, word)) {
             // this word is ladder, add to set
-            mappedSet.insert(wordInWords);
+            mappedSet.emplace(wordInWords);
         }
     }
 
@@ -49,233 +100,13 @@ unordered_map<string, unordered_set<string>> getWordMapAll(const unordered_set<s
     unordered_map<string, unordered_set<string>> map{};
 
     for (auto &word: words) {
-        map.insert({word, getWordMap(words, word)});
+        map.emplace(make_pair(word, getWordMap(words, word)));
     }
 
     return map;
 }
 
-vector<vector<string>> computeLadderOld(unordered_set<string> &words, const string &from, const string &to) {
-    vector<vector<string>> ladders;
-    filterDissimilarWords(words, from);
-    auto wordMap = getWordMapAll(words);
-
-    // compute words appeared until found to
-    vector<unordered_set<string>> hops{unordered_set<string>{from}};
-    unordered_set<string> visited;
-    bool toFound = false;
-    while (!toFound) {
-        unordered_set<string> nextHopWords;
-        for (const string &word: hops.back()) {
-            for (const string &oneHopWord : wordMap[word]) {
-                if (visited.find(oneHopWord) == visited.end()) {
-                    nextHopWords.insert(oneHopWord);
-                    visited.insert(oneHopWord);
-                    toFound |= oneHopWord == to;
-                }
-            }
-        }
-        if (toFound) {
-            hops.push_back({to});
-        } else {
-            if (nextHopWords.empty()) {
-                // no solution, no more words can be found
-                return ladders;
-            } else {
-                hops.push_back(nextHopWords);
-            }
-        }
-    }
-
-    // filter words cant be reversely achieved from 'to'
-    for (reverse_iterator fromHops = hops.rbegin(); (fromHops + 1) != hops.rend(); ++fromHops) {
-        unordered_set<string> &toHops = *(fromHops + 1);
-        for (auto itToHops = toHops.begin(); itToHops != toHops.end();) {
-            bool canMapFromTo = false;
-            for (const string &fromWord : (*fromHops)) {
-                auto mappedSet = wordMap[fromWord];
-                canMapFromTo = mappedSet.find(*itToHops) != mappedSet.end();
-                if (canMapFromTo) {
-                    break;
-                }
-            }
-            if (!canMapFromTo) {
-                itToHops = toHops.erase(itToHops);
-            } else if (itToHops != toHops.end()) {
-                ++itToHops;
-            }
-        }
-        if (toHops.empty()) {
-            return ladders;
-        }
-    }
-
-    // convert hops to one-to-many maps
-    unordered_map<string, unordered_set<string>> ladderMap;
-    for (auto itHops = hops.cbegin(); (itHops + 1) != hops.cend(); ++itHops) {
-        const unordered_set<string> &fromSet = *itHops;
-        const unordered_set<string> &toSet = *(itHops + 1);
-        for (const string &fromWord: fromSet) {
-            unordered_set<string> mappedSet;
-            for (const string &toWord: toSet) {
-                auto fullMap = wordMap[fromWord];
-                if (fullMap.find(toWord) != fullMap.end()) {
-                    mappedSet.insert(toWord);
-                }
-            }
-            ladderMap.insert({fromWord, mappedSet});
-        }
-    }
-
-    // construct ladders
-    stack<string> stackDFS;
-    vector<string> ladderStack;
-    stackDFS.push(from);
-    bool ladderStackNeedFix = false;
-    while (!stackDFS.empty()) {
-        string next = stackDFS.top();
-        if (ladderStackNeedFix) {
-            // after a ladder is found, re-construct ladder stack
-            while (!ladderStack.empty()) {
-                string back = ladderStack.back();
-                auto map = ladderMap[back];
-                if (map.find(next) != map.end()) {
-                    break;
-                } else {
-                    ladderStack.pop_back();
-                }
-            }
-        }
-        ladderStack.push_back(next);
-        if (next == to) {
-            // a ladder is found
-            ladders.push_back(ladderStack);
-            ladderStackNeedFix = true;
-        }
-        stackDFS.pop();
-        for (const string &word: ladderMap[next]) {
-            stackDFS.push(word);
-        }
-    }
-
-    return ladders;
-}
-
-void filterMore(unordered_set<string> &words, const string &from, const string &to) {
-    queue<string> ladderQueue;
-    unordered_set<string> newWords;
-
-    ladderQueue.push(from);
-
-    while (!ladderQueue.empty()) {
-        string curr = ladderQueue.front();
-        ladderQueue.pop();
-        if (curr == to) {
-            words = newWords;
-            return;
-        } else {
-            auto it = words.begin();
-            while (it != words.end()) {
-                string word = *it;
-                if (neighbour(word, curr)) {
-                    ladderQueue.push(word);
-                    newWords.insert(word);
-                    it = words.erase(it);
-                } else {
-                    ++it;
-                }
-            }
-        }
-    }
-}
-
-// TODO swap these two
-unsigned short calculateMinHops(unordered_set<string> &words, const string &from, const string &to) {
-    unordered_map<string, unsigned short> depths;
-    queue<string> ladderQueue;
-    unordered_set<string> newWords;
-
-    depths.insert({from, 1});
-    ladderQueue.push(from);
-
-    while (!ladderQueue.empty()) {
-        string curr = ladderQueue.front();
-        ladderQueue.pop();
-        if (curr == to) {
-            filterMore(newWords, to, from);
-            words = newWords;
-            return depths[curr];
-        } else {
-            unsigned short nextDepth = depths[curr] + 1;
-            auto it = words.begin();
-            while (it != words.end()) {
-                string word = *it;
-                if (neighbour(word, curr)) {
-                    ladderQueue.push(word);
-                    depths.insert({word, nextDepth});
-                    newWords.insert(word);
-                    it = words.erase(it);
-                } else {
-                    ++it;
-                }
-            }
-        }
-    }
-
-    return 0;
-}
-
-vector<unordered_set<string>> getHops(unordered_set<string> &words, const string &from, const string &to) {
-    unordered_map<string, unsigned short> depths;
-    queue<string> ladderQueue;
-//    unordered_set<string> newWords;
-
-    depths.insert({from, 1});
-    ladderQueue.push(from);
-    unsigned short minHops = 0;
-
-    while (!ladderQueue.empty()) {
-        string curr = ladderQueue.front();
-        ladderQueue.pop();
-        if (curr == to) {
-            minHops = depths[curr];
-//            break;
-        } else {
-            unsigned short nextDepth = depths[curr] + 1;
-            auto it = words.begin();
-            while (it != words.end()) {
-                string word = *it;
-                if (neighbour(word, curr)) {
-                    ladderQueue.push(word);
-                    depths.insert({word, nextDepth});
-//                    newWords.insert(word);
-                    it = words.erase(it);
-                } else {
-                    ++it;
-                }
-            }
-        }
-    }
-
-    vector<unordered_set<string>> hops;
-
-    if (! minHops) {
-        return hops;
-    }
-    for (unsigned short i = 0; i < minHops; ++i) {
-        hops.emplace_back(unordered_set<string>{});
-    }
-
-    // convert to hops
-    for (auto &entry: depths) {
-        const unsigned short depth = entry.second;
-        if (depth < minHops) {
-            const string &word = entry.first;
-            hops[depth - 1].insert(word);
-        }
-    }
-    hops[minHops - 1].insert(to);
-
+void filterReverseHops(vector<unordered_set<string>> &hops) {
     // filter words cant be reversely achieved from 'to'
     for (reverse_iterator fromHops = hops.rbegin(); (fromHops + 1) != hops.rend(); ++fromHops) {
         unordered_set<string> &toHops = *(fromHops + 1);
@@ -294,34 +125,72 @@ vector<unordered_set<string>> getHops(unordered_set<string> &words, const string
             }
         }
         if (toHops.empty()) {
-            return vector<unordered_set<string>>{};
+            hops.clear();
+            return;
         }
     }
+}
 
+vector<unordered_set<string>>
+constructHops(const string &to, const unordered_map<string, unsigned short> &depths, unsigned short minHops) {
+    vector<unordered_set<string>> hops(minHops, unordered_set<string>{});
+
+    if (!minHops) {
+        return hops;
+    }
+
+    // convert to hops
+    for (auto &entry: depths) {
+        const unsigned short depth = entry.second;
+        if (depth < minHops) {
+            const string &word = entry.first;
+            hops[depth - 1].insert(word);
+        }
+    }
+    hops[minHops - 1].insert(to);
+    filterReverseHops(hops);
     return hops;
 }
 
-vector<vector<string>> computeLadder(unordered_set<string> &words, const string &from, const string &to) {
-    vector<vector<string>> ladders;
-    filterDissimilarWords(words, from);
+vector<unordered_set<string>> getHops(unordered_set<string> &words, const string &from, const string &to) {
+    unordered_map<string, unsigned short> depths;
+    queue<string> ladderQueue;
 
-    auto hops = getHops(words, from, to);
-    if (hops.empty()) {
-        return ladders;
-    }
+    depths.insert({from, 1});
+    ladderQueue.push(from);
+    unsigned short minHops = 0;
 
-    unordered_set<string> newWords;
-    for (auto &hop: hops) {
-        for (const string &word: hop) {
-            newWords.insert(word);
+    while (!ladderQueue.empty()) {
+        string curr = ladderQueue.front();
+        ladderQueue.pop();
+        if (curr == to) {
+            minHops = depths[curr];
+            break;
+        } else {
+            unsigned short nextDepth = depths[curr] + 1;
+            auto it = words.begin();
+            while (it != words.end()) {
+                string word = *it;
+                if (neighbour(word, curr)) {
+                    ladderQueue.push(word);
+                    depths.insert({word, nextDepth});
+                    it = words.erase(it);
+                } else {
+                    ++it;
+                }
+            }
         }
     }
 
-    // construct ladders
-    auto wordMap = getWordMapAll(newWords);
+    return constructHops(to, depths, minHops);
+}
+
+unordered_map<string, unordered_set<string>>
+constructLadderMap(const unordered_set<string> &words, const vector<unordered_set<string>> &hops) {
+    unordered_map<string, unordered_set<string>> ladderMap;
+    auto wordMap = getWordMapAll(words);
 
     // convert hops to one-to-many maps
-    unordered_map<string, unordered_set<string>> ladderMap;
     for (auto itHops = hops.cbegin(); (itHops + 1) != hops.cend(); ++itHops) {
         const unordered_set<string> &fromSet = *itHops;
         const unordered_set<string> &toSet = *(itHops + 1);
@@ -337,6 +206,12 @@ vector<vector<string>> computeLadder(unordered_set<string> &words, const string 
         }
     }
 
+    return ladderMap;
+}
+
+vector<vector<string>>
+constructLadders(unordered_map<string, unordered_set<string>> &ladderMap, const string &from, const string &to) {
+    vector<vector<string>> ladders;
     stack<string> stackDFS;
     vector<string> ladderStack;
     stackDFS.push(from);
@@ -366,7 +241,27 @@ vector<vector<string>> computeLadder(unordered_set<string> &words, const string 
             stackDFS.push(word);
         }
     }
+
     return ladders;
+}
+
+vector<vector<string>> computeLadder(unordered_set<string> &words, const string &from, const string &to) {
+    filterDissimilarWords(words, from);
+    vector<unordered_set<string>> hops = getHops(words, from, to);
+
+    if (hops.empty()) {
+        return vector<vector<string>>{};
+    }
+
+    words.clear();
+    for (auto &hop: hops) {
+        for (const string &word: hop) {
+            words.insert(word);
+        }
+    }
+
+    unordered_map<string, unordered_set<string>> ladderMap = constructLadderMap(words, hops);
+    return constructLadders(ladderMap, from, to);
 }
 
 void sortLadders(vector<vector<string>> &ladders) {
