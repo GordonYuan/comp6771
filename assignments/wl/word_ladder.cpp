@@ -14,6 +14,11 @@ std::unordered_set<std::string> getWordMap(const std::unordered_set<std::string>
                                            const std::string& word);
 
 /*
+ * sort ladders in their lexicographic order
+ */
+void sortLadders(std::vector<std::vector<std::string>>& ladders);
+
+/*
  * return a map of all words that map to the unordered_set of one distance words
  * for performance, it is assumed that all word in words have same size
  * */
@@ -313,8 +318,13 @@ std::vector<std::vector<std::string>> computeLadder(std::unordered_set<std::stri
   std::unordered_map<std::string, std::unordered_set<std::string>> ladderMap =
       constructLadderMap(words, hops);
 
-  // compute and reuturn final ladders using ladder map
-  return constructLadders(ladderMap, from, to);
+  // compute  final ladders using ladder map
+  std::vector<std::vector<std::string>> ladders = constructLadders(ladderMap, from, to);
+
+  // sort ladders
+  sortLadders(ladders);
+
+  return ladders;
 }
 
 void sortLadders(std::vector<std::vector<std::string>>& ladders) {

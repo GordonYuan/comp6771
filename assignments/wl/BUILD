@@ -27,7 +27,6 @@ cc_library(
 cc_test(
     name = "word_ladder_test",
     srcs = ["word_ladder_test.cpp"],
-    data = ["words.txt"],
     deps = [
         ":word_ladder",
         "//:catch",

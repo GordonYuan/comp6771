@@ -20,7 +20,6 @@ int main() {
 
   // calculate and output result
   auto ladders = computeLadder(lexicon, from, to);
-  sortLadders(ladders);
   printLadders(ladders);
 
   return 0;
