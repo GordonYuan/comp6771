@@ -3,20 +3,19 @@
 #include "assignments/wl/lexicon.h"
 #include "assignments/wl/word_ladder.h"
 
-using namespace std;
 
 int main() {
-    unordered_set<string> lexicon = GetLexicon("assignments/wl/words.txt");
+    std::unordered_set<std::string> lexicon = GetLexicon("assignments/wl/words.txt");
 
     // read inputs
-    string from, to;
-    cout << "Enter start word (RETURN to quit): ";
-    getline(cin, from);
+    std::string from, to;
+    std::cout << "Enter start word (RETURN to quit): ";
+    getline(std::cin, from);
     if (from.empty()) {
         return 0;
     }
-    cout << "Enter destination word: ";
-    getline(cin, to);
+    std::cout << "Enter destination word: ";
+    getline(std::cin, to);
 
     // calculate and output result
     auto ladders = computeLadder(lexicon, from, to);
