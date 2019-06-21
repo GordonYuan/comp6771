@@ -273,33 +273,36 @@ vector<unordered_set<string>> getHops(unordered_set<string> &words, const string
         }
     }
 
-    cout << "depths done" << endl;
+    cerr << "depths done" << endl;
 
     vector<unordered_set<string>> hops;
     for (unsigned short i = 0; i < minHops; ++i) {
         hops.emplace_back(unordered_set<string>{});
     }
 
-    cout << "size: " << hops.size() << endl;
+    cerr << "size: " << hops.size() << endl;
+    if (hops.empty()) {
+        return hops;
+    }
 
     // convert to hops
     for (auto &entry: depths) {
         const unsigned short depth = entry.second;
         if (depth < minHops) {
             const string &word = entry.first;
-//            cout << "[" << word << "." << depth << "]" << endl;
+//            cerr << "[" << word << "." << depth << "]" << endl;
             hops[depth - 1].insert(word);
         }
     }
     hops[minHops - 1].insert(to);
 
-    cout << "convet done" << endl;
+    cerr << "convet done" << endl;
     for (int i = 0; i < minHops; ++i) {
-        cout << "D " << i << ": ";
+        cerr << "D " << i << ": ";
         for (auto word: hops[i]) {
-            cout << word << " ";
+            cerr << word << " ";
         }
-        cout << endl;
+        cerr << endl;
     }
 
     // filter words cant be reversely achieved from 'to'
@@ -324,16 +327,16 @@ vector<unordered_set<string>> getHops(unordered_set<string> &words, const string
         }
     }
 
-    cout << "convet done" << endl;
+    cerr << "convet done" << endl;
     for (int i = 0; i < minHops; ++i) {
-        cout << "D " << i << ": ";
+        cerr << "D " << i << ": ";
         for (auto word: hops[i]) {
-            cout << word << " ";
+            cerr << word << " ";
         }
-        cout << endl;
+        cerr << endl;
     }
 
-    cout << "exiting hops" << endl;
+    cerr << "exiting hops" << endl;
     return hops;
 }
 
@@ -341,11 +344,11 @@ void computeLadderRecursive(unordered_set<string> &words, const string &to, vect
                             vector<vector<string>> &ladders, const unsigned short &minHops) {
     const string curr = lStack.back();
 //    for (auto word: lStack) {
-//        cout << word << " ";
+//        cerr << word << " ";
 //    }
-//    cout << ": " << lStack.size() <<  endl;
+//    cerr << ": " << lStack.size() <<  endl;
     if (curr == to) {
-//        cout << "found " << endl;
+//        cerr << "found " << endl;
         ladders.push_back(lStack);
 //        lStack.pop_back();
     } else if (lStack.size() < minHops) {
@@ -353,13 +356,13 @@ void computeLadderRecursive(unordered_set<string> &words, const string &to, vect
         for (const string &word: words) {
             ++i;
 //            if (curr == "con") {
-//                cout << ":" << word;
+//                cerr << ":" << word;
 //            }
             if (find(lStack.begin(), lStack.end(), word) == lStack.end() && neighbour(curr, word)) {
 //                if (curr == "con") {
-//                    cout << "::" << word << endl;
+//                    cerr << "::" << word << endl;
 //                }
-//                cout << "\t" << word << endl;
+//                cerr << "\t" << word << endl;
                 lStack.push_back(word);
                 computeLadderRecursive(words, to, lStack, ladders, minHops);
                 lStack.pop_back();
@@ -372,10 +375,14 @@ vector<vector<string>> computeLadder(unordered_set<string> &words, const string 
     vector<vector<string>> ladders;
     filterDissimilarWords(words, from);
 
-//    cout << "size: " << words.size() << endl;
+//    cerr << "size: " << words.size() << endl;
 //    unsigned short minHops = calculateMinHops(words, from, to);
     auto hops = getHops(words, from, to);
-    cout << "hops end" << endl;
+    cerr << "hops end" << endl;
+    if (hops.empty()) {
+        return ladders;
+    }
+
     unordered_set<string> newWords;
     for (auto &hop: hops) {
         for (const string &word: hop) {
@@ -435,11 +442,11 @@ vector<vector<string>> computeLadder(unordered_set<string> &words, const string 
             stackDFS.push(word);
         }
     }
-//    cout << "min : " << minHops << endl;
-//    cout << "size: " << words.size() << endl;
+//    cerr << "min : " << minHops << endl;
+//    cerr << "size: " << words.size() << endl;
 
 //    for (auto word: words) {
-//        cout << word << endl;
+//        cerr << word << endl;
 //    }
 
 //    vector<string> lStackTemp{from};
