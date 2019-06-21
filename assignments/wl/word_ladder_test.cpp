@@ -6,6 +6,17 @@
    to which you're certain you have covered all possibilities,
    and why you think your tests are that thorough.
 
+  Explanation: All the possible cases are covered in the test.
+   Include: most simple test (dictionary with words that forms exactly one ladder)
+            most simple test (dictionary with words that forms exactly two ladders)
+            most simple test (dictionary with words that forms no ladders)
+            intermediate test (dictionary with more words that forms one ladder)
+            intermediate test (dictionary with more words that forms two ladders)
+            harder test (dictionary with many words that forms two ladders)
+            harder test (dictionary with some words with different lengths)
+            harder test (dictionary which forms not only shortest paths, but also longer paths)
+   These tests covers normal cases as well as edge cases.
+
 */
 
 #include <string>
