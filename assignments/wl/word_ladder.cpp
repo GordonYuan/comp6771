@@ -190,7 +190,7 @@ void filterMore(unordered_set<string> &words, const string &from, const string &
 }
 
 // TODO swap these two
-unsigned short calculateMinHops(unordered_set<string> &words, const string &from, const string &to) {
+unsigned short calculateMinHopsOld(unordered_set<string> &words, const string &from, const string &to) {
     unordered_map<string, unsigned short> depths;
     queue<string> ladderQueue;
     unordered_set<string> newWords;
@@ -225,23 +225,115 @@ unsigned short calculateMinHops(unordered_set<string> &words, const string &from
     return 0;
 }
 
-vector<unordered_set<string>> getHops(unordered_set<string> &words, const string &from, const string &to) {
+unsigned short calculateMinHops(const unordered_set<string> &words, const string &from, const string &to) {
+    unordered_map<string, unsigned short> depths;
+    unordered_map<string, unsigned short> depthsBack;
+    queue<string> ladderQueue;
+    queue<string> ladderQueueBack;
+    unordered_set<string> visited;
+    unordered_set<string> visitedBack;
+
+    depths.insert({from, 1});
+    ladderQueue.push(from);
+
+    depthsBack.insert({to, 1});
+    ladderQueueBack.push(to);
+
+    bool isFront = true;
+    while (!ladderQueue.empty() || !ladderQueueBack.empty()) {
+        string curr = ladderQueue.front();
+        string currBack = ladderQueueBack.front();
+        isFront = !isFront;
+
+        bool found = false;
+        unsigned short depth = -1;
+        for (auto &word: visited) {
+            if (neighbour(word, currBack)) {
+                unsigned short nextDepth = depths[word] + depthsBack[currBack];
+                if (! found) {
+                    found = true;
+                    depth = nextDepth;
+                } else if (nextDepth < depth){
+                    depth = nextDepth;
+                }
+            }
+        }
+
+        for (auto &word: visitedBack) {
+            if (neighbour(word, curr)) {
+                unsigned short nextDepth = depthsBack[word] + depths[curr];
+                if (! found) {
+                    found = true;
+                    depth = nextDepth;
+                } else if (nextDepth < depth){
+                    depth = nextDepth;
+                }
+            }
+        }
+
+        if (found) {
+//            cout << "depths" << endl;
+//            for (auto entry:depths) {
+//                cout << entry.second << " ";
+//                cout << entry.first << " ";
+//                cout << endl;
+//            }
+//            cout << "depthsBack" << endl;
+//            for (auto entry:depthsBack) {
+//                cout << entry.second << " ";
+//                cout << entry.first << " ";
+//                cout << endl;
+//            }
+            return depth;
+        } else {
+            if ((isFront && !ladderQueue.empty()) || ladderQueueBack.empty()) {
+                ladderQueue.pop();
+                unsigned short nextDepth = depths[curr] + 1;
+                for (auto &word : words) {
+                    if (visited.find(word) == visited.end() && neighbour(word, curr)) {
+                        ladderQueue.push(word);
+                        depths.insert({word, nextDepth});
+                        visited.insert(word);
+                    }
+                }
+            } else {
+                ladderQueueBack.pop();
+                unsigned short nextDepth = depthsBack[currBack] + 1;
+                for (auto &word : words) {
+                    if (visitedBack.find(word) == visitedBack.end() && neighbour(word, currBack)) {
+                        ladderQueueBack.push(word);
+                        depthsBack.insert({word, nextDepth});
+                        visitedBack.insert(word);
+                    }
+                }
+            }
+        }
+    }
+
+    return 0;
+}
+
+vector<unordered_set<string>> getHops(unordered_set<string> &words, const string &from, const string &to, unsigned short minHops) {
     unordered_map<string, unsigned short> depths;
     queue<string> ladderQueue;
+    vector<unordered_set<string>> hops;
 //    unordered_set<string> newWords;
 
     depths.insert({from, 1});
     ladderQueue.push(from);
-    unsigned short minHops = 0;
+//    unsigned short minHops = 0;
 
     while (!ladderQueue.empty()) {
         string curr = ladderQueue.front();
         ladderQueue.pop();
         if (curr == to) {
-            minHops = depths[curr];
+//            minHops = depths[curr];
 //            break;
         } else {
             unsigned short nextDepth = depths[curr] + 1;
+//            if (nextDepth > minHops) {
+//                return hops;
+//            }
             auto it = words.begin();
             while (it != words.end()) {
                 string word = *it;
@@ -257,11 +349,6 @@ vector<unordered_set<string>> getHops(unordered_set<string> &words, const string
         }
     }
 
-    vector<unordered_set<string>> hops;
-
-    if (! minHops) {
-        return hops;
-    }
     for (unsigned short i = 0; i < minHops; ++i) {
         hops.emplace_back(unordered_set<string>{});
     }
@@ -305,7 +392,13 @@ vector<vector<string>> computeLadder(unordered_set<string> &words, const string 
     vector<vector<string>> ladders;
     filterDissimilarWords(words, from);
 
-    auto hops = getHops(words, from, to);
+    unsigned short minHops = calculateMinHops(words, from, to);
+//    cout << "min: " << minHops << endl;
+    if (! minHops) {
+        return ladders;
+    }
+
+    auto hops = getHops(words, from, to, minHops);
     if (hops.empty()) {
         return ladders;
     }
