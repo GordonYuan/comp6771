@@ -12,9 +12,9 @@
 #include <unordered_set>
 #include <vector>
 
+#include "assignments/wl/lexicon.h"
 #include "assignments/wl/word_ladder.h"
 #include "catch.h"
-#include "lexicon.h"
 
 SCENARIO("Find ladders", "[computeLadder]") {
   GIVEN("3 words which forms a ladder") {
