@@ -25,20 +25,37 @@ function diff_test() {
     local OUTPUT_MINE=${A1}"/sh_test/output/mine/"${NAME}
 
     # run given solution
-    echo "Running " ${NAME} " with reference_solution_osx"
+    printf ${NAME}
+    printf " ref "
+    local START=`python -c'import time; print(repr(time.time()))'`
     ./${A1}/reference_solution_osx < ${INPUT} > ${OUTPUT_REF}
+    local END=`python -c'import time; print(repr(time.time()))'`
+    local REF_RUNTIME=$( echo "${END} - ${START}" | bc -l )
+    printf ${REF_RUNTIME}
 
     # run my solution
-    echo "Running " ${NAME} " with my_solution_osx"
+    printf " mine "
+    local START=`python -c'import time; print(repr(time.time()))'`
     ./bazel-bin/assignments/wl/main < ${INPUT} > ${OUTPUT_MINE}
+    local END=`python -c'import time; print(repr(time.time()))'`
+    local MINE_RUNTIME=$( echo "${END} - ${START}" | bc -l )
+    printf ${MINE_RUNTIME}
+
+    local MULTIPLE=$( echo "${MINE_RUNTIME} / ${REF_RUNTIME}" | bc -l )
+    printf ${MULTIPLE}
+    local EXCEED=$( echo "${MULTIPLE} > 10" | bc -l )
+    if [[ ${EXCEED} == '1' ]]; then
+        printf "\tEXCEED"
+        echo ${MULTIPLE} " " ${NAME} " my:" ${MINE_RUNTIME} " ref:" ${REF_RUNTIME}  >> ${A1}/sh_test/log/time_exceed.txt
+    else
+        echo ${MULTIPLE} " " ${NAME} " my:" ${MINE_RUNTIME} " ref:" ${REF_RUNTIME}  >> ${A1}/sh_test/log/time.txt
+    fi
 
     # show difference
     diff ${OUTPUT_REF} ${OUTPUT_MINE} --ignore-all-space
 
     # print if no diff
-    if [[ $? -eq 0 ]]; then
-        echo "No difference";
-    else
+    if [[ $? -ne 0 ]]; then
         echo ${NAME} >> ${A1}/sh_test/log/difference.txt
     fi
     echo
@@ -69,3 +86,6 @@ do
         diff_test_length ${LENGTH}
     done
 done
+
+# test hardest
+#diff_test atlases cabaret
