@@ -19,8 +19,8 @@ int main() {
   getline(std::cin, to);
 
   // calculate and output result
-  auto ladders = computeLadder(lexicon, from, to);
-  printLadders(ladders);
+  auto ladders = ComputeLadder(lexicon, from, to);
+  PrintLadders(ladders);
 
   return 0;
 }
