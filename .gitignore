@@ -3,3 +3,4 @@ bazel-*
 .vscode/
 compile_commands.json
 test/
+.DS_Store
