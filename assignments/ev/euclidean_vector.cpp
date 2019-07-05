@@ -2,6 +2,6 @@
 
 #include <algorithm>  // Look at these - they are helpful https://en.cppreference.com/w/cpp/algorithm
 
-EuclideanVector::EuclideanVector(int i) {
+EuclideanVector::EuclideanVector(int i, double n) {
 
 }

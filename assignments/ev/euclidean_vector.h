@@ -17,7 +17,10 @@ private:
 
 class EuclideanVector {
 public:
-    explicit EuclideanVector(int i) : EuclideanVector(i, 0){};
+    EuclideanVector() : EuclideanVector(1) {};
+
+    explicit EuclideanVector(int i) : EuclideanVector(i, 0.0) {};
+
     explicit EuclideanVector(int i, double n);
 
     friend std::ostream &operator<<(std::ostream &os, const EuclideanVector &v);
