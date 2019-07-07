@@ -8,6 +8,8 @@
 #include <vector>
 #include <list>
 #include <cassert>
+#include <cmath>
+#include <numeric>
 
 
 class EuclideanVectorError : public std::exception {
@@ -57,6 +59,16 @@ public:
     explicit operator std::vector<double>();
 
     explicit operator std::list<double>();
+
+    double at(int index) const;
+
+    double &at(int index);
+
+    int GetNumDimensions();
+
+    double GetEuclideanNorm();
+
+    EuclideanVector CreateUnitVector();
 
 private:
     // the number of values in magnitudes

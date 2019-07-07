@@ -138,3 +138,42 @@ EuclideanVector::operator std::list<double>() {
 
     return list;
 }
+
+double EuclideanVector::at(int index) const {
+    if (index < 0 || index >= size_) {
+        throw EuclideanVectorError{"Index X is not valid for this EuclideanVector object"};
+    }
+
+    return (*this)[index];
+}
+
+double &EuclideanVector::at(int index) {
+    if (index < 0 || index >= size_) {
+        throw EuclideanVectorError{"Index X is not valid for this EuclideanVector object"};
+    }
+
+    return (*this)[index];
+}
+
+int EuclideanVector::GetNumDimensions() {
+    return size_;
+}
+
+double EuclideanVector::GetEuclideanNorm() {
+    auto vec = std::vector<double>{*this};
+    return std::sqrt(std::accumulate(vec.cbegin(), vec.cend(), 0.0L,
+                                     [](double sum, double value) { return sum + value * value; }));
+}
+
+EuclideanVector EuclideanVector::CreateUnitVector() {
+    double norm = GetEuclideanNorm();
+
+    if (norm == 0) {
+        throw EuclideanVectorError{"EuclideanVector with euclidean normal of 0 does not have a unit vector"};
+    }
+
+    EuclideanVector unit = *this;
+    unit /= norm;
+
+    return unit;
+}
