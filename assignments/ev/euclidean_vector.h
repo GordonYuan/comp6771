@@ -6,6 +6,8 @@
 #include <memory>
 #include <ostream>
 #include <vector>
+#include <list>
+#include <cassert>
 
 
 class EuclideanVectorError : public std::exception {
@@ -32,7 +34,29 @@ public:
 
     EuclideanVector(EuclideanVector &&move) noexcept : size_{move.size_}, magnitudes_{std::move(move.magnitudes_)} {};
 
+    ~EuclideanVector() = default;
+
     friend std::ostream &operator<<(std::ostream &os, const EuclideanVector &v);
+
+    EuclideanVector &operator=(const EuclideanVector &copy);
+
+    EuclideanVector &operator=(EuclideanVector &&move) noexcept;
+
+    double &operator[](int index);
+
+    double &operator[](int index) const;
+
+    EuclideanVector &operator+=(EuclideanVector &add);
+
+    EuclideanVector &operator-=(EuclideanVector &sub);
+
+    EuclideanVector &operator*=(double scala);
+
+    EuclideanVector &operator/=(double scala);
+
+    explicit operator std::vector<double>();
+
+    explicit operator std::list<double>();
 
 private:
     // the number of values in magnitudes
