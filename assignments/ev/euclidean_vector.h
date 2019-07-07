@@ -38,7 +38,6 @@ public:
 
     ~EuclideanVector() = default;
 
-    friend std::ostream &operator<<(std::ostream &os, const EuclideanVector &v);
 
     EuclideanVector &operator=(const EuclideanVector &copy);
 
@@ -56,9 +55,9 @@ public:
 
     EuclideanVector &operator/=(double scala);
 
-    explicit operator std::vector<double>();
+    explicit operator std::vector<double>() const;
 
-    explicit operator std::list<double>();
+    explicit operator std::list<double>() const;
 
     double at(int index) const;
 
@@ -69,6 +68,11 @@ public:
     double GetEuclideanNorm();
 
     EuclideanVector CreateUnitVector();
+
+    friend std::ostream &operator<<(std::ostream &os, const EuclideanVector &v);
+
+    friend bool operator==(const EuclideanVector &lhs, const EuclideanVector &rhs);
+    friend bool operator!=(const EuclideanVector &lhs, const EuclideanVector &rhs);
 
 private:
     // the number of values in magnitudes

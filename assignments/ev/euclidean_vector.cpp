@@ -119,7 +119,7 @@ EuclideanVector &EuclideanVector::operator/=(double scala) {
     return *this;
 }
 
-EuclideanVector::operator std::vector<double>() {
+EuclideanVector::operator std::vector<double>() const {
     std::vector<double> vec;
 
     for (int i = 0; i < size_; ++i) {
@@ -129,7 +129,7 @@ EuclideanVector::operator std::vector<double>() {
     return vec;
 }
 
-EuclideanVector::operator std::list<double>() {
+EuclideanVector::operator std::list<double>() const {
     std::list<double> list;
 
     for (int i = 0; i < size_; ++i) {
@@ -177,3 +177,12 @@ EuclideanVector EuclideanVector::CreateUnitVector() {
 
     return unit;
 }
+
+bool operator==(const EuclideanVector &lhs, const EuclideanVector &rhs) {
+    return std::vector<double>{lhs} == std::vector<double>{rhs};
+}
+
+bool operator!=(const EuclideanVector &lhs, const EuclideanVector &rhs) {
+    return not(lhs == rhs);
+}
+
