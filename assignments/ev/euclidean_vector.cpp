@@ -18,8 +18,13 @@ std::ostream &operator<<(std::ostream &os, const EuclideanVector &v) {
         os << v.magnitudes_[i] << " ";
     }
 
-    // last numebr is followed by a closing bracket
-    os << v.magnitudes_[v.size_ - 1] << "]";
+    // last numebr if any
+    if (v.size_ >= 1) {
+        os << v.magnitudes_[v.size_ - 1];
+    }
+
+    // followed by a closing bracket
+    os  << "]";
     return os;
 }
 
@@ -60,6 +65,7 @@ EuclideanVector &EuclideanVector::operator=(EuclideanVector &&move) noexcept {
 
     magnitudes_ = std::move(move.magnitudes_);
 
+    move.size_ = 0;
     return *this;
 }
 
@@ -99,21 +105,21 @@ EuclideanVector &EuclideanVector::operator-=(EuclideanVector &sub) {
     return *this;
 }
 
-EuclideanVector &EuclideanVector::operator*=(double scala) {
+EuclideanVector &EuclideanVector::operator*=(int scalar) {
     for (int i = 0; i < size_; ++i) {
-        magnitudes_[i] *= scala;
+        magnitudes_[i] *= scalar;
     }
 
     return *this;
 }
 
-EuclideanVector &EuclideanVector::operator/=(double scala) {
-    if (scala == 0) {
+EuclideanVector &EuclideanVector::operator/=(int scalar) {
+    if (scalar == 0) {
         throw EuclideanVectorError{"Invalid vector division by 0"};
     }
 
     for (int i = 0; i < size_; ++i) {
-        magnitudes_[i] /= scala;
+        magnitudes_[i] /= scalar;
     }
 
     return *this;
@@ -155,7 +161,7 @@ double &EuclideanVector::at(int index) {
     return (*this)[index];
 }
 
-int EuclideanVector::GetNumDimensions() {
+int EuclideanVector::GetNumDimensions() const {
     return size_;
 }
 
@@ -184,5 +190,71 @@ bool operator==(const EuclideanVector &lhs, const EuclideanVector &rhs) {
 
 bool operator!=(const EuclideanVector &lhs, const EuclideanVector &rhs) {
     return not(lhs == rhs);
+}
+
+EuclideanVector operator+(const EuclideanVector &lhs, const EuclideanVector &rhs) {
+    if (lhs.GetNumDimensions() != rhs.GetNumDimensions()) {
+        throw EuclideanVectorError{"Dimensions of LHS(X) and RHS(Y) do not match"};
+    }
+
+    EuclideanVector sum = lhs;
+
+    for (int i = 0; i < lhs.size_; ++i) {
+        lhs.magnitudes_[i] += rhs.magnitudes_[i];
+    }
+
+    return sum;
+}
+
+EuclideanVector operator-(const EuclideanVector &lhs, const EuclideanVector &rhs) {
+    if (lhs.GetNumDimensions() != rhs.GetNumDimensions()) {
+        throw EuclideanVectorError{"Dimensions of LHS(X) and RHS(Y) do not match"};
+    }
+
+    EuclideanVector sum = lhs;
+
+    for (int i = 0; i < lhs.size_; ++i) {
+        lhs.magnitudes_[i] -= rhs.magnitudes_[i];
+    }
+
+    return sum;
+}
+
+double operator*(const EuclideanVector &lhs, const EuclideanVector &rhs) {
+    if (lhs.GetNumDimensions() != rhs.GetNumDimensions()) {
+        throw EuclideanVectorError{"Dimensions of LHS(X) and RHS(Y) do not match"};
+    }
+
+    double product = 0;
+    for (int i = 0; i < lhs.GetNumDimensions(); ++i) {
+        product += lhs[0] * rhs[0];
+    }
+
+    return product;
+}
+
+EuclideanVector operator*(const EuclideanVector &lhs, int scalar) {
+    EuclideanVector mul = lhs;
+
+    for (int i = 0; i < lhs.size_; ++i) {
+        mul.magnitudes_[i] *= scalar;
+    }
+
+    return mul;
+}
+
+EuclideanVector operator*(int scalar, const EuclideanVector &lhs) {
+    return lhs * scalar;
+}
+
+EuclideanVector operator/(const EuclideanVector &lhs, int scalar) {
+    if (scalar == 0) {
+        throw EuclideanVectorError{"Invalid vector division by 0"};
+    }
+
+    EuclideanVector div = lhs;
+    div /= scalar;
+
+    return div;
 }
 

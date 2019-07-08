@@ -34,7 +34,7 @@ public:
 
     EuclideanVector(const EuclideanVector &copy);
 
-    EuclideanVector(EuclideanVector &&move) noexcept : size_{move.size_}, magnitudes_{std::move(move.magnitudes_)} {};
+    EuclideanVector(EuclideanVector &&move) noexcept : size_{move.size_}, magnitudes_{std::move(move.magnitudes_)} {move.size_=0;};
 
     ~EuclideanVector() = default;
 
@@ -51,9 +51,9 @@ public:
 
     EuclideanVector &operator-=(EuclideanVector &sub);
 
-    EuclideanVector &operator*=(double scala);
+    EuclideanVector &operator*=(int scalar);
 
-    EuclideanVector &operator/=(double scala);
+    EuclideanVector &operator/=(int scalar);
 
     explicit operator std::vector<double>() const;
 
@@ -63,7 +63,7 @@ public:
 
     double &at(int index);
 
-    int GetNumDimensions();
+    int GetNumDimensions() const;
 
     double GetEuclideanNorm();
 
@@ -72,11 +72,24 @@ public:
     friend std::ostream &operator<<(std::ostream &os, const EuclideanVector &v);
 
     friend bool operator==(const EuclideanVector &lhs, const EuclideanVector &rhs);
+
     friend bool operator!=(const EuclideanVector &lhs, const EuclideanVector &rhs);
+
+    friend EuclideanVector operator+(const EuclideanVector &lhs, const EuclideanVector &rhs);
+
+    friend EuclideanVector operator-(const EuclideanVector &lhs, const EuclideanVector &rhs);
+
+    friend double operator*(const EuclideanVector &lhs, const EuclideanVector &rhs);
+
+    friend EuclideanVector operator*(const EuclideanVector &lhs, int scalar);
+
+    friend EuclideanVector operator*(int scalar, const EuclideanVector &lhs);
+
+    friend EuclideanVector operator/(const EuclideanVector &lhs, int scalar);
 
 private:
     // the number of values in magnitudes
-    unsigned int size_;
+    int size_;
 
     std::unique_ptr<double[]> magnitudes_;
 };
