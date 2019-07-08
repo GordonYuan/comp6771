@@ -51,9 +51,9 @@ public:
 
     EuclideanVector &operator-=(EuclideanVector &sub);
 
-    EuclideanVector &operator*=(int scalar);
+    EuclideanVector &operator*=(double scalar);
 
-    EuclideanVector &operator/=(int scalar);
+    EuclideanVector &operator/=(double scalar);
 
     explicit operator std::vector<double>() const;
 
@@ -81,11 +81,11 @@ public:
 
     friend double operator*(const EuclideanVector &lhs, const EuclideanVector &rhs);
 
-    friend EuclideanVector operator*(const EuclideanVector &lhs, int scalar);
+    friend EuclideanVector operator*(const EuclideanVector &lhs, double scalar);
 
-    friend EuclideanVector operator*(int scalar, const EuclideanVector &lhs);
+    friend EuclideanVector operator*(double scalar, const EuclideanVector &lhs);
 
-    friend EuclideanVector operator/(const EuclideanVector &lhs, int scalar);
+    friend EuclideanVector operator/(const EuclideanVector &lhs, double scalar);
 
 private:
     // the number of values in magnitudes

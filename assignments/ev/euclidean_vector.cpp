@@ -105,7 +105,7 @@ EuclideanVector &EuclideanVector::operator-=(EuclideanVector &sub) {
     return *this;
 }
 
-EuclideanVector &EuclideanVector::operator*=(int scalar) {
+EuclideanVector &EuclideanVector::operator*=(double scalar) {
     for (int i = 0; i < size_; ++i) {
         magnitudes_[i] *= scalar;
     }
@@ -113,7 +113,7 @@ EuclideanVector &EuclideanVector::operator*=(int scalar) {
     return *this;
 }
 
-EuclideanVector &EuclideanVector::operator/=(int scalar) {
+EuclideanVector &EuclideanVector::operator/=(double scalar) {
     if (scalar == 0) {
         throw EuclideanVectorError{"Invalid vector division by 0"};
     }
@@ -179,10 +179,7 @@ EuclideanVector EuclideanVector::CreateUnitVector() {
     }
 
     EuclideanVector unit = *this;
-
-    for (int i = 0; i < size_; ++i) {
-        unit[i] /= norm;
-    }
+    unit /= norm;
 
     return unit;
 }
@@ -236,7 +233,7 @@ double operator*(const EuclideanVector &lhs, const EuclideanVector &rhs) {
     return product;
 }
 
-EuclideanVector operator*(const EuclideanVector &lhs, int scalar) {
+EuclideanVector operator*(const EuclideanVector &lhs, double scalar) {
     EuclideanVector mul = lhs;
 
     for (int i = 0; i < lhs.size_; ++i) {
@@ -246,11 +243,11 @@ EuclideanVector operator*(const EuclideanVector &lhs, int scalar) {
     return mul;
 }
 
-EuclideanVector operator*(int scalar, const EuclideanVector &lhs) {
+EuclideanVector operator*(double scalar, const EuclideanVector &lhs) {
     return lhs * scalar;
 }
 
-EuclideanVector operator/(const EuclideanVector &lhs, int scalar) {
+EuclideanVector operator/(const EuclideanVector &lhs, double scalar) {
     if (scalar == 0) {
         throw EuclideanVectorError{"Invalid vector division by 0"};
     }
