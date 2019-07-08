@@ -179,7 +179,10 @@ EuclideanVector EuclideanVector::CreateUnitVector() {
     }
 
     EuclideanVector unit = *this;
-    unit /= norm;
+
+    for (int i = 0; i < size_; ++i) {
+        unit[i] /= norm;
+    }
 
     return unit;
 }
