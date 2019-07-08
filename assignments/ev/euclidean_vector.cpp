@@ -210,13 +210,13 @@ EuclideanVector operator-(const EuclideanVector& lhs, const EuclideanVector& rhs
     throw EuclideanVectorError{"Dimensions of LHS(X) and RHS(Y) do not match"};
   }
 
-  EuclideanVector sum = lhs;
+  EuclideanVector sub = lhs;
 
   for (int i = 0; i < lhs.size_; ++i) {
-    lhs.magnitudes_[i] -= rhs.magnitudes_[i];
+    sub.magnitudes_[i] -= rhs.magnitudes_[i];
   }
 
-  return sum;
+  return sub;
 }
 
 double operator*(const EuclideanVector& lhs, const EuclideanVector& rhs) {
@@ -226,7 +226,7 @@ double operator*(const EuclideanVector& lhs, const EuclideanVector& rhs) {
 
   double product = 0;
   for (int i = 0; i < lhs.GetNumDimensions(); ++i) {
-    product += lhs[0] * rhs[0];
+    product += lhs[i] * rhs[i];
   }
 
   return product;
