@@ -7,6 +7,7 @@
 #include <exception>
 #include <list>
 #include <memory>
+#include <string>
 #include <numeric>
 #include <ostream>
 #include <string>
@@ -18,7 +19,6 @@ class EuclideanVectorError : public std::exception {
   explicit EuclideanVectorError(const std::string& what) : what_(what) {}
 
   const char* what() const noexcept { return what_.c_str(); }
-
  private:
   std::string what_;
 };
@@ -96,6 +96,7 @@ class EuclideanVector {
   int size_;
 
   std::unique_ptr<double[]> magnitudes_;
+  // TODO(you): add more
 };
 
 #endif  // ASSIGNMENTS_EV_EUCLIDEAN_VECTOR_H_"
