@@ -1,17 +1,9 @@
 #ifndef ASSIGNMENTS_EV_EUCLIDEAN_VECTOR_H_
 #define ASSIGNMENTS_EV_EUCLIDEAN_VECTOR_H_
 
-#include <algorithm>
-#include <cassert>
-#include <cmath>
 #include <exception>
+#include <string>
 #include <list>
-#include <memory>
-#include <string>
-#include <numeric>
-#include <ostream>
-#include <string>
-#include <utility>
 #include <vector>
 
 class EuclideanVectorError : public std::exception {
@@ -31,7 +23,7 @@ class EuclideanVector {
 
   explicit EuclideanVector(int i, double n);
 
-  EuclideanVector(std::vector<double>::const_iterator begin,
+  explicit EuclideanVector(std::vector<double>::const_iterator begin,
                   std::vector<double>::const_iterator end);
 
   EuclideanVector(const EuclideanVector& copy);
@@ -43,7 +35,7 @@ class EuclideanVector {
 
   ~EuclideanVector() = default;
 
-  EuclideanVector& operator=(const EuclideanVector& copy);
+  EuclideanVector& operator=(const EuclideanVector& copy) noexcept;
 
   EuclideanVector& operator=(EuclideanVector&& move) noexcept;
 
@@ -51,27 +43,27 @@ class EuclideanVector {
 
   double& operator[](int index) const;
 
-  EuclideanVector& operator+=(EuclideanVector& add);
+  EuclideanVector& operator+=(const EuclideanVector &add);
 
-  EuclideanVector& operator-=(EuclideanVector& sub);
+  EuclideanVector& operator-=(const EuclideanVector &sub);
 
-  EuclideanVector& operator*=(double scalar);
+  EuclideanVector& operator*=(const double scalar);
 
-  EuclideanVector& operator/=(double scalar);
+  EuclideanVector& operator/=(const double scalar);
 
-  explicit operator std::vector<double>() const;
+  explicit operator std::vector<double>() const noexcept;
 
-  explicit operator std::list<double>() const;
+  explicit operator std::list<double>() const noexcept;
 
   double at(int index) const;
 
   double& at(int index);
 
-  int GetNumDimensions() const;
+  int GetNumDimensions() const noexcept;
 
-  double GetEuclideanNorm();
+  double GetEuclideanNorm() const noexcept;
 
-  EuclideanVector CreateUnitVector();
+  EuclideanVector CreateUnitVector() const;
 
   friend std::ostream& operator<<(std::ostream& os, const EuclideanVector& v);
 

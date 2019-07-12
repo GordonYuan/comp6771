@@ -1,5 +1,15 @@
 #include "assignments/ev/euclidean_vector.h"
 
+#include <sstream>
+#include <algorithm>
+#include <cassert>
+#include <cmath>
+#include <exception>
+#include <memory>
+#include <numeric>
+#include <ostream>
+#include <utility>
+
 EuclideanVector::EuclideanVector(int i, double n) {
   size_ = i;
   magnitudes_ = std::make_unique<double[]>(size_);
@@ -40,17 +50,18 @@ EuclideanVector::EuclideanVector(std::vector<double>::const_iterator begin,
 EuclideanVector::EuclideanVector(const EuclideanVector& copy) {
   size_ = copy.size_;
   magnitudes_ = std::make_unique<double[]>(size_);
+
+  // copy everything
   for (int i = 0; i < size_; ++i) {
     magnitudes_[i] = copy.magnitudes_[i];
   }
 }
 
-EuclideanVector& EuclideanVector::operator=(const EuclideanVector& copy) {
+EuclideanVector& EuclideanVector::operator=(const EuclideanVector& copy) noexcept {
   size_ = copy.size_;
 
   // release old pointer and manage the new pointer
   magnitudes_ = std::make_unique<double[]>(size_);
-
   for (int i = 0; i < size_; ++i) {
     magnitudes_[i] = copy.magnitudes_[i];
   }
@@ -79,9 +90,11 @@ double& EuclideanVector::operator[](int index) const {
   return magnitudes_[index];
 }
 
-EuclideanVector& EuclideanVector::operator+=(EuclideanVector& add) {
+EuclideanVector& EuclideanVector::operator+=(const EuclideanVector &add) {
   if (size_ != add.size_) {
-    throw EuclideanVectorError{"Dimensions of LHS(X) and RHS(Y) do not match"};
+    std::stringstream msg;
+    msg << "Dimensions of LHS(" << size_ << ") and RHS(" << add.size_ << ") do not match";
+    throw EuclideanVectorError{msg.str()};
   }
 
   for (int i = 0; i < size_; ++i) {
@@ -91,9 +104,11 @@ EuclideanVector& EuclideanVector::operator+=(EuclideanVector& add) {
   return *this;
 }
 
-EuclideanVector& EuclideanVector::operator-=(EuclideanVector& sub) {
+EuclideanVector& EuclideanVector::operator-=(const EuclideanVector &sub) {
   if (size_ != sub.size_) {
-    throw EuclideanVectorError{"Dimensions of LHS(X) and RHS(Y) do not match"};
+    std::stringstream msg;
+    msg << "Dimensions of LHS(" << size_ << ") and RHS(" << sub.size_ << ") do not match";
+    throw EuclideanVectorError{msg.str()};
   }
 
   for (int i = 0; i < size_; ++i) {
@@ -103,7 +118,7 @@ EuclideanVector& EuclideanVector::operator-=(EuclideanVector& sub) {
   return *this;
 }
 
-EuclideanVector& EuclideanVector::operator*=(double scalar) {
+EuclideanVector& EuclideanVector::operator*=(const double scalar) {
   for (int i = 0; i < size_; ++i) {
     magnitudes_[i] *= scalar;
   }
@@ -111,7 +126,7 @@ EuclideanVector& EuclideanVector::operator*=(double scalar) {
   return *this;
 }
 
-EuclideanVector& EuclideanVector::operator/=(double scalar) {
+EuclideanVector& EuclideanVector::operator/=(const double scalar) {
   if (scalar == 0) {
     throw EuclideanVectorError{"Invalid vector division by 0"};
   }
@@ -123,7 +138,7 @@ EuclideanVector& EuclideanVector::operator/=(double scalar) {
   return *this;
 }
 
-EuclideanVector::operator std::vector<double>() const {
+EuclideanVector::operator std::vector<double>() const noexcept {
   std::vector<double> vec;
 
   for (int i = 0; i < size_; ++i) {
@@ -133,7 +148,7 @@ EuclideanVector::operator std::vector<double>() const {
   return vec;
 }
 
-EuclideanVector::operator std::list<double>() const {
+EuclideanVector::operator std::list<double>() const noexcept {
   std::list<double> list;
 
   for (int i = 0; i < size_; ++i) {
@@ -145,7 +160,9 @@ EuclideanVector::operator std::list<double>() const {
 
 double EuclideanVector::at(int index) const {
   if (index < 0 || index >= size_) {
-    throw EuclideanVectorError{"Index X is not valid for this EuclideanVector object"};
+    std::stringstream msg;
+    msg << "Index " << index << " is not valid for this EuclideanVector object";
+    throw EuclideanVectorError{msg.str()};
   }
 
   return (*this)[index];
@@ -153,23 +170,25 @@ double EuclideanVector::at(int index) const {
 
 double& EuclideanVector::at(int index) {
   if (index < 0 || index >= size_) {
-    throw EuclideanVectorError{"Index X is not valid for this EuclideanVector object"};
+    std::stringstream msg;
+    msg << "Index " << index << " is not valid for this EuclideanVector object";
+    throw EuclideanVectorError{msg.str()};
   }
 
   return (*this)[index];
 }
 
-int EuclideanVector::GetNumDimensions() const {
+int EuclideanVector::GetNumDimensions() const noexcept {
   return size_;
 }
 
-double EuclideanVector::GetEuclideanNorm() {
+double EuclideanVector::GetEuclideanNorm() const noexcept {
   auto vec = std::vector<double>{*this};
   return std::sqrt(std::accumulate(vec.cbegin(), vec.cend(), 0.0L,
                                    [](double sum, double value) { return sum + value * value; }));
 }
 
-EuclideanVector EuclideanVector::CreateUnitVector() {
+EuclideanVector EuclideanVector::CreateUnitVector() const {
   double norm = GetEuclideanNorm();
 
   if (norm == 0) {
