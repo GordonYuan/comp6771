@@ -1,13 +1,15 @@
 #include "assignments/ev/euclidean_vector.h"
 
-#include <sstream>
 #include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <exception>
+#include <list>
 #include <memory>
 #include <numeric>
 #include <ostream>
+#include <sstream>
+#include <string>
 #include <utility>
 
 EuclideanVector::EuclideanVector(int i, double n) {
@@ -90,7 +92,7 @@ double& EuclideanVector::operator[](int index) const {
   return magnitudes_[index];
 }
 
-EuclideanVector& EuclideanVector::operator+=(const EuclideanVector &add) {
+EuclideanVector& EuclideanVector::operator+=(const EuclideanVector& add) {
   if (size_ != add.size_) {
     std::stringstream msg;
     msg << "Dimensions of LHS(" << size_ << ") and RHS(" << add.size_ << ") do not match";
@@ -104,7 +106,7 @@ EuclideanVector& EuclideanVector::operator+=(const EuclideanVector &add) {
   return *this;
 }
 
-EuclideanVector& EuclideanVector::operator-=(const EuclideanVector &sub) {
+EuclideanVector& EuclideanVector::operator-=(const EuclideanVector& sub) {
   if (size_ != sub.size_) {
     std::stringstream msg;
     msg << "Dimensions of LHS(" << size_ << ") and RHS(" << sub.size_ << ") do not match";
@@ -203,7 +205,11 @@ EuclideanVector EuclideanVector::CreateUnitVector() const {
 }
 
 bool operator==(const EuclideanVector& lhs, const EuclideanVector& rhs) {
-  return std::vector<double>{lhs} == std::vector<double>{rhs};
+  std::vector<double> lvec{lhs};
+  std::vector<double> rvec{rhs};
+  std::sort(lvec.begin(), lvec.end());
+  std::sort(rvec.begin(), rvec.end());
+  return lvec == rvec;
 }
 
 bool operator!=(const EuclideanVector& lhs, const EuclideanVector& rhs) {
@@ -212,13 +218,15 @@ bool operator!=(const EuclideanVector& lhs, const EuclideanVector& rhs) {
 
 EuclideanVector operator+(const EuclideanVector& lhs, const EuclideanVector& rhs) {
   if (lhs.GetNumDimensions() != rhs.GetNumDimensions()) {
-    throw EuclideanVectorError{"Dimensions of LHS(X) and RHS(Y) do not match"};
+    std::stringstream msg;
+    msg << "Dimensions of LHS(" << lhs.size_ << ") and RHS(" << rhs.size_ << ") do not match";
+    throw EuclideanVectorError{msg.str()};
   }
 
   EuclideanVector sum = lhs;
 
   for (int i = 0; i < lhs.size_; ++i) {
-    lhs.magnitudes_[i] += rhs.magnitudes_[i];
+    sum.magnitudes_[i] += rhs.magnitudes_[i];
   }
 
   return sum;
@@ -226,7 +234,9 @@ EuclideanVector operator+(const EuclideanVector& lhs, const EuclideanVector& rhs
 
 EuclideanVector operator-(const EuclideanVector& lhs, const EuclideanVector& rhs) {
   if (lhs.GetNumDimensions() != rhs.GetNumDimensions()) {
-    throw EuclideanVectorError{"Dimensions of LHS(X) and RHS(Y) do not match"};
+    std::stringstream msg;
+    msg << "Dimensions of LHS(" << lhs.size_ << ") and RHS(" << rhs.size_ << ") do not match";
+    throw EuclideanVectorError{msg.str()};
   }
 
   EuclideanVector sub = lhs;
@@ -240,7 +250,9 @@ EuclideanVector operator-(const EuclideanVector& lhs, const EuclideanVector& rhs
 
 double operator*(const EuclideanVector& lhs, const EuclideanVector& rhs) {
   if (lhs.GetNumDimensions() != rhs.GetNumDimensions()) {
-    throw EuclideanVectorError{"Dimensions of LHS(X) and RHS(Y) do not match"};
+    std::stringstream msg;
+    msg << "Dimensions of LHS(" << lhs.size_ << ") and RHS(" << rhs.size_ << ") do not match";
+    throw EuclideanVectorError{msg.str()};
   }
 
   double product = 0;
