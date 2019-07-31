@@ -88,24 +88,11 @@ bool gdwg::Graph<N, E>::InsertEdge(const N &src, const N &dst, const E &w) {
 }
 
 template<typename N, typename E>
-bool gdwg::Graph<N, E>::IsNode(const N &val) {
-  return std::find_if(nodes.begin(), nodes.end(), [&, val](node_ptr const &node) { return *node == val; }) !=
-         nodes.end();
-}
-
-
-template<typename N, typename E>
 bool gdwg::Graph<N, E>::IsEdge(const N &src, const N &dst, const E &w) {
-  // allow permutation of src and dst
   return std::find_if(connections.begin(), connections.end(),
                       [&, src, dst, w](connection const &connect) {
-                        return *(std::get<0>(connect)) == src && *(std::get<1>(connect)) == dst &&
-                               std::get<2>(connect) == w;
-                      }) != connections.end() ||
-         std::find_if(connections.begin(), connections.end(),
-                      [&, src, dst, w](connection const &connect) {
-                        return *(std::get<1>(connect)) == src && *(std::get<0>(connect)) == dst &&
-                               std::get<2>(connect) == w;
+                        return std::get<2>(connect) == w &&
+                               (*(std::get<0>(connect)) == src && *(std::get<1>(connect)) == dst);
                       }) != connections.end();
 }
 
@@ -194,4 +181,68 @@ template<typename N, typename E>
 void gdwg::Graph<N, E>::Clear() {
   nodes.clear();
   connections.clear();
+}
+
+template<typename N, typename E>
+bool gdwg::Graph<N, E>::IsConnected(const N &src, const N &dst) {
+  // allow permutation of src and dst
+  return std::find_if(connections.begin(), connections.end(),
+                      [&, src, dst](connection const &connect) {
+                        return *(std::get<0>(connect)) == src && *(std::get<1>(connect)) == dst;
+                      }) != connections.end();
+}
+
+
+template<typename N, typename E>
+bool gdwg::Graph<N, E>::IsNode(const N &val) {
+  return std::find_if(nodes.begin(), nodes.end(), [&, val](node_ptr const &node) { return *node == val; }) !=
+         nodes.end();
+}
+
+template<typename N, typename E>
+std::vector<N> gdwg::Graph<N, E>::GetNodes() {
+  std::vector<N> node_return;
+  std::transform(nodes.begin(), nodes.end(), std::back_inserter(node_return),
+                 [](node_ptr const &node) -> N { return *node; });
+  std::sort(node_return.begin(), node_return.end());
+  return node_return;
+}
+
+template<typename N, typename E>
+std::vector<N> gdwg::Graph<N, E>::GetConnected(const N &src) {
+  if (!IsNode(src)) {
+    throw std::out_of_range("Cannot call Graph::GetConnected if src doesn't exist in the graph");
+  }
+
+  auto connections_copy = connections;
+  connections_copy.erase(std::remove_if(connections_copy.begin(), connections_copy.end(),
+                                        [&, src](connection const &conn) { return *(std::get<0>(conn)) != src; }),
+                         connections_copy.end());
+
+  std::vector<N> conn_return;
+  std::transform(connections_copy.begin(), connections_copy.end(), std::back_inserter(conn_return),
+                 [](connection const &conn) -> N { return *(std::get<1>(conn)); });
+  std::sort(conn_return.begin(), conn_return.end());
+  return conn_return;
+}
+
+template<typename N, typename E>
+std::vector<E> gdwg::Graph<N, E>::GetWeights(const N &src, const N &dst) {
+  if (!IsNode(src) || !IsNode(dst)) {
+    // not both nodes exist
+    throw std::out_of_range("Cannot call Graph::GetWeights if src or dst node don't exist in the graph");
+  }
+
+  auto connections_copy = connections;
+  connections_copy.erase(std::remove_if(connections_copy.begin(), connections_copy.end(),
+                                        [&, src, dst](connection const &conn) {
+                                          return *(std::get<0>(conn)) != src || *(std::get<1>(conn)) != dst;
+                                        }),
+                         connections_copy.end());
+
+  std::vector<E> weights;
+  std::transform(connections_copy.begin(), connections_copy.end(), std::back_inserter(weights),
+                 [](connection const &conn) -> E { return std::get<2>(conn); });
+  std::sort(weights.begin(), weights.end());
+  return weights;
 }
