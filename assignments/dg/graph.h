@@ -102,6 +102,9 @@ namespace gdwg {
   private:
     std::vector<node_ptr> nodes;
     std::vector<connection> connections;
+
+    // helper function
+    bool IsEdge(const N &src, const N &dst, const E &w);
   };
 
 }  // namespace gdwg
