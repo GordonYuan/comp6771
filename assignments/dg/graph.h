@@ -53,15 +53,15 @@ namespace gdwg {
 
     void Clear();
 
-    bool IsNode(const N &val);
+    bool IsNode(const N &val) const;
 
-    bool IsConnected(const N &src, const N &dst);
+    bool IsConnected(const N &src, const N &dst) const;
 
-    std::vector<N> GetNodes();
+    std::vector<N> GetNodes() const;
 
-    std::vector<N> GetConnected(const N &src);
+    std::vector<N> GetConnected(const N &src) const;
 
-    std::vector<E> GetWeights(const N &src, const N &dst);
+    std::vector<E> GetWeights(const N &src, const N &dst) const;
 
     const_iterator find(const N &, const N &, const E &);
 
@@ -85,11 +85,50 @@ namespace gdwg {
 
     const_reverse_iterator rend();
 
-    friend bool operator==(const gdwg::Graph<N, E> &, const gdwg::Graph<N, E> &);
+    friend bool operator==(const gdwg::Graph<N, E> &lhs, const gdwg::Graph<N, E> &rhs) {
+      if (lhs.nodes.size() != rhs.nodes.size() || lhs.connections.size() != rhs.connections.size()) {
+        return false;
+      }
 
-    friend bool operator!=(const gdwg::Graph<N, E> &, const gdwg::Graph<N, E> &);
+      // compare nodes
+      for (auto lit = lhs.nodes.begin(), rit = rhs.nodes.begin(); lit != lhs.nodes.end(); ++lit, ++rit) {
+        if (**lit != **rit) {
+          return false;
+        }
+      }
 
-    friend std::ostream &operator<<(std::ostream &, const gdwg::Graph<N, E> &);
+      // compare edges
+      for (auto lit = lhs.connections.begin(), rit = rhs.connections.begin();
+           lit != lhs.connections.end(); ++lit, ++rit) {
+        const connection &lconn = *lit;
+        const connection &rconn = *rit;
+        if (*std::get<0>(lconn) != *std::get<0>(rconn) ||
+            *std::get<1>(lconn) != *std::get<1>(rconn) ||
+            std::get<2>(lconn) != std::get<2>(rconn)) {
+          return false;
+        }
+      }
+
+      // same
+      return true;
+    }
+
+    friend bool operator!=(const gdwg::Graph<N, E> &lhs, const gdwg::Graph<N, E> &rhs) {
+      return !(lhs == rhs);
+    }
+
+    friend std::ostream &operator<<(std::ostream &out, const gdwg::Graph<N, E> &graph) {
+      for (const auto &src: graph.GetNodes()) {
+        out << src << " (\n";
+        for (const auto &dst: graph.GetConnected(src)) {
+          for (const E &weight: graph.GetWeights(src, dst)) {
+            out << "  " << dst << " | " << weight << "\n";
+          }
+        }
+        out << ")\n";
+      }
+      out << std::flush;
+    }
 
     void test() {
       for (auto i : nodes) {
@@ -131,6 +170,7 @@ namespace gdwg {
 
     // helper function
     bool IsEdge(const N &src, const N &dst, const E &w);
+
     bool NodeInConnection(const connection &conn, const N &node);
   };
 

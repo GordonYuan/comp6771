@@ -176,7 +176,7 @@ void gdwg::Graph<N, E>::Clear() {
 }
 
 template<typename N, typename E>
-bool gdwg::Graph<N, E>::IsConnected(const N &src, const N &dst) {
+bool gdwg::Graph<N, E>::IsConnected(const N &src, const N &dst) const {
   // allow permutation of src and dst
   return std::find_if(connections.begin(), connections.end(),
                       [&, src, dst](connection const &connect) {
@@ -186,12 +186,12 @@ bool gdwg::Graph<N, E>::IsConnected(const N &src, const N &dst) {
 
 
 template<typename N, typename E>
-bool gdwg::Graph<N, E>::IsNode(const N &val) {
+bool gdwg::Graph<N, E>::IsNode(const N &val) const {
   return nodes.find(val) != nodes.end();
 }
 
 template<typename N, typename E>
-std::vector<N> gdwg::Graph<N, E>::GetNodes() {
+std::vector<N> gdwg::Graph<N, E>::GetNodes() const {
   std::vector<N> node_return;
   std::transform(nodes.begin(), nodes.end(), std::back_inserter(node_return),
                  [](node_ptr const &node) -> N { return *node; });
@@ -199,7 +199,7 @@ std::vector<N> gdwg::Graph<N, E>::GetNodes() {
 }
 
 template<typename N, typename E>
-std::vector<N> gdwg::Graph<N, E>::GetConnected(const N &src) {
+std::vector<N> gdwg::Graph<N, E>::GetConnected(const N &src) const {
   if (!IsNode(src)) {
     throw std::out_of_range("Cannot call Graph::GetConnected if src doesn't exist in the graph");
   }
@@ -219,7 +219,7 @@ std::vector<N> gdwg::Graph<N, E>::GetConnected(const N &src) {
 }
 
 template<typename N, typename E>
-std::vector<E> gdwg::Graph<N, E>::GetWeights(const N &src, const N &dst) {
+std::vector<E> gdwg::Graph<N, E>::GetWeights(const N &src, const N &dst) const {
   if (!IsNode(src) || !IsNode(dst)) {
     // not both nodes exist
     throw std::out_of_range("Cannot call Graph::GetWeights if src or dst node don't exist in the graph");
