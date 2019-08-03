@@ -64,7 +64,7 @@ bool gdwg::Graph<N, E>::InsertNode(const N &val) {
     return false;
   } else {
     // not exist, add to nodes
-    nodes.push_back(std::make_shared<N>(val));
+    nodes.insert(std::make_shared<N>(val));
     return true;
   }
 }
@@ -78,11 +78,7 @@ bool gdwg::Graph<N, E>::InsertEdge(const N &src, const N &dst, const E &w) {
     // such edge with weight exists
     return false;
   } else {
-    node_ptr node1 = *(std::find_if(nodes.begin(), nodes.end(),
-                                    [&, src](node_ptr const &node) { return *node == src; }));
-    node_ptr node2 = *(std::find_if(nodes.begin(), nodes.end(),
-                                    [&, dst](node_ptr const &node) { return *node == dst; }));
-    connections.push_back(std::make_tuple(node1, node2, w));
+    connections.insert(std::make_tuple(*nodes.find(src), *nodes.find(dst), w));
     return true;
   }
 }
@@ -103,19 +99,16 @@ bool gdwg::Graph<N, E>::DeleteNode(const N &node) {
   }
 
   // delete associated edges
-  connections.erase(
-      std::remove_if(connections.begin(), connections.end(),
-                     [&, node](connection const &conn) {
-                       N node1 = *(std::get<0>(conn));
-                       N node2 = *(std::get<1>(conn));
-                       return node1 == node || node2 == node;
-                     }
-      ), connections.end());
+  for (auto it = connections.begin(); it != connections.end();) {
+    if (NodeInConnection(*it, node)) {
+      it = connections.erase(it);
+    } else {
+      ++it;
+    }
+  }
 
   // delete node
-  nodes.erase(
-      std::remove_if(nodes.begin(), nodes.end(), [&, node](node_ptr const &node_in) { return *node_in == node; }),
-      nodes.end());
+  nodes.erase(nodes.find(node));
   return true;
 }
 
@@ -129,7 +122,7 @@ bool gdwg::Graph<N, E>::Replace(const N &oldData, const N &newData) {
     throw std::runtime_error("Cannot call Graph::Replace on a node that doesn't exist");
   }
 
-  auto it = std::find_if(nodes.begin(), nodes.end(), [&, oldData](node_ptr const &node) { return *node == oldData; });
+  auto it = nodes.find(oldData);
   // *it pointer to node
   // **it node
   **it = newData;
@@ -144,15 +137,14 @@ void gdwg::Graph<N, E>::MergeReplace(const N &oldData, const N &newData) {
   }
 
   // point all oldData in connections to newData
-  auto it_new = std::find_if(nodes.begin(), nodes.end(),
-                             [&, newData](node_ptr const &node) { return *node == newData; });
+  auto it_new = nodes.find(newData);
 
   // store all changed connection to a temp vector and remove them from connections
   // add these connections from temp vector to this.connections
   // implicitly removes duplications
   std::vector<connection> changed_connections;
   for (auto it = connections.begin(); it != connections.end();) {
-    connection &conn = *it;
+    connection conn = *it;
     bool found = false;
     if (*(std::get<0>(conn)) == oldData) {
       std::get<0>(conn) = *it_new;
@@ -170,7 +162,7 @@ void gdwg::Graph<N, E>::MergeReplace(const N &oldData, const N &newData) {
     }
   }
   for (auto &conn : changed_connections) {
-    InsertEdge(*(std::get<0>(conn)), *(std::get<1>(conn)), std::get<2>(conn));
+    connections.insert(conn);
   }
 
   // oldData is no longer used
@@ -195,8 +187,7 @@ bool gdwg::Graph<N, E>::IsConnected(const N &src, const N &dst) {
 
 template<typename N, typename E>
 bool gdwg::Graph<N, E>::IsNode(const N &val) {
-  return std::find_if(nodes.begin(), nodes.end(), [&, val](node_ptr const &node) { return *node == val; }) !=
-         nodes.end();
+  return nodes.find(val) != nodes.end();
 }
 
 template<typename N, typename E>
@@ -204,7 +195,6 @@ std::vector<N> gdwg::Graph<N, E>::GetNodes() {
   std::vector<N> node_return;
   std::transform(nodes.begin(), nodes.end(), std::back_inserter(node_return),
                  [](node_ptr const &node) -> N { return *node; });
-  std::sort(node_return.begin(), node_return.end());
   return node_return;
 }
 
@@ -214,15 +204,17 @@ std::vector<N> gdwg::Graph<N, E>::GetConnected(const N &src) {
     throw std::out_of_range("Cannot call Graph::GetConnected if src doesn't exist in the graph");
   }
 
-  auto connections_copy = connections;
-  connections_copy.erase(std::remove_if(connections_copy.begin(), connections_copy.end(),
-                                        [&, src](connection const &conn) { return *(std::get<0>(conn)) != src; }),
-                         connections_copy.end());
-
   std::vector<N> conn_return;
-  std::transform(connections_copy.begin(), connections_copy.end(), std::back_inserter(conn_return),
-                 [](connection const &conn) -> N { return *(std::get<1>(conn)); });
+  for (auto conn: connections) {
+    if (*std::get<0>(conn) == src) {
+      conn_return.push_back(*std::get<1>(conn));
+    }
+  }
+
   std::sort(conn_return.begin(), conn_return.end());
+  conn_return.erase(
+      std::unique(conn_return.begin(), conn_return.end()), conn_return.end()
+  );
   return conn_return;
 }
 
@@ -233,16 +225,18 @@ std::vector<E> gdwg::Graph<N, E>::GetWeights(const N &src, const N &dst) {
     throw std::out_of_range("Cannot call Graph::GetWeights if src or dst node don't exist in the graph");
   }
 
-  auto connections_copy = connections;
-  connections_copy.erase(std::remove_if(connections_copy.begin(), connections_copy.end(),
-                                        [&, src, dst](connection const &conn) {
-                                          return *(std::get<0>(conn)) != src || *(std::get<1>(conn)) != dst;
-                                        }),
-                         connections_copy.end());
-
   std::vector<E> weights;
-  std::transform(connections_copy.begin(), connections_copy.end(), std::back_inserter(weights),
-                 [](connection const &conn) -> E { return std::get<2>(conn); });
+  for (auto conn: connections) {
+    if (*std::get<0>(conn) == src && *std::get<1>(conn) == dst) {
+      weights.push_back(std::get<2>(conn));
+    }
+  }
+
   std::sort(weights.begin(), weights.end());
   return weights;
+}
+
+template<typename N, typename E>
+bool gdwg::Graph<N, E>::NodeInConnection(const connection &conn, const N &node) {
+  return *(std::get<0>(conn)) == node || *(std::get<1>(conn)) == node;
 }
