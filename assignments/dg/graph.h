@@ -11,12 +11,44 @@ namespace gdwg {
   template<typename N, typename E>
   class Graph {
   public:
+    using node_ptr = std::shared_ptr<N>;
+    using connection = std::tuple<node_ptr, node_ptr, E>;
 
     class const_iterator {
+      friend class Graph;
+
+    public:
+      using iterator_category = std::bidirectional_iterator_tag;
+      using value_type = std::tuple<N, N, E>;
+      using reference = std::tuple<const N &, const N &, const E &>;
+      using pointer = std::tuple<const N &, const N &, const E &>;
+      using difference_type = long;
+
+      explicit const_iterator(typename std::set<connection>::const_iterator it) : it_{it} {}
+
+      const_iterator &operator++();
+
+      const const_iterator operator++(int);
+
+      const_iterator &operator--();
+
+      const const_iterator operator--(int);
+
+      const reference operator*() const;
+
+      friend bool operator==(const const_iterator &lhs, const const_iterator &rhs) {
+        return lhs.it_ == rhs.it_;
+      }
+
+      friend bool operator!=(const const_iterator &lhs, const const_iterator &rhs) {
+        return lhs.it_ != rhs.it_;
+      }
+
+    private:
+      typename std::set<connection>::const_iterator it_;
     };
 
-    class const_reverse_iterator {
-    };
+    using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
     Graph() = default;
 
@@ -69,37 +101,37 @@ namespace gdwg {
 
     const_iterator erase(const_iterator it);
 
-    const_iterator cbegin();
+    const_iterator cbegin() const noexcept;
 
-    const_iterator cend();
+    const_iterator cend() const noexcept;
 
-    const_reverse_iterator crbegin();
+    const_reverse_iterator crbegin() const noexcept;
 
-    const_iterator crend();
+    const_reverse_iterator crend() const noexcept;
 
-    const_iterator begin();
+    const_iterator begin() const noexcept;
 
-    const_iterator end();
+    const_iterator end() const noexcept;
 
-    const_reverse_iterator rbegin();
+    const_reverse_iterator rbegin() const noexcept;
 
-    const_reverse_iterator rend();
+    const_reverse_iterator rend() const noexcept;
 
     friend bool operator==(const gdwg::Graph<N, E> &lhs, const gdwg::Graph<N, E> &rhs) {
-      if (lhs.nodes.size() != rhs.nodes.size() || lhs.connections.size() != rhs.connections.size()) {
+      if (lhs.nodes_.size() != rhs.nodes_.size() || lhs.connections_.size() != rhs.connections_.size()) {
         return false;
       }
 
       // compare nodes
-      for (auto lit = lhs.nodes.begin(), rit = rhs.nodes.begin(); lit != lhs.nodes.end(); ++lit, ++rit) {
+      for (auto lit = lhs.nodes_.begin(), rit = rhs.nodes_.begin(); lit != lhs.nodes_.end(); ++lit, ++rit) {
         if (**lit != **rit) {
           return false;
         }
       }
 
       // compare edges
-      for (auto lit = lhs.connections.begin(), rit = rhs.connections.begin();
-           lit != lhs.connections.end(); ++lit, ++rit) {
+      for (auto lit = lhs.connections_.begin(), rit = rhs.connections_.begin();
+           lit != lhs.connections_.end(); ++lit, ++rit) {
         const connection &lconn = *lit;
         const connection &rconn = *rit;
         if (*std::get<0>(lconn) != *std::get<0>(rconn) ||
@@ -128,20 +160,19 @@ namespace gdwg {
         out << ")\n";
       }
       out << std::flush;
+      return out;
     }
 
     void test() {
-      for (auto i : nodes) {
+      for (auto i : nodes_) {
         std::cout << *i << std::endl;
       }
-      for (auto i : connections) {
+      for (auto i : connections_) {
         std::cout << *(std::get<0>(i)) << *(std::get<1>(i)) << std::get<2>(i) << std::endl;
       }
     }
 
   private:
-    using node_ptr = std::shared_ptr<N>;
-    using connection = std::tuple<node_ptr, node_ptr, E>;
 
     struct compare {
       using is_transparent = void;
@@ -165,8 +196,8 @@ namespace gdwg {
       }
     };
 
-    std::set<node_ptr, compare> nodes;
-    std::set<connection> connections;
+    std::set<node_ptr, compare> nodes_;
+    std::set<connection> connections_;
 
     // helper function
     bool IsEdge(const N &src, const N &dst, const E &w);
