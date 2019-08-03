@@ -190,14 +190,24 @@ namespace gdwg {
       }
 
       bool operator()(const connection &lhs, const connection &rhs) const {
-        return *std::get<0>(lhs) < *std::get<0>(rhs) ||
-               *std::get<1>(lhs) < *std::get<1>(rhs) ||
-               std::get<2>(lhs) < std::get<2>(rhs);
+        if (*std::get<0>(lhs) < *std::get<0>(rhs)) {
+          return true;
+        } else if (*std::get<0>(lhs) > *std::get<0>(rhs)) {
+          return false;
+        } else {
+          if (*std::get<1>(lhs) < *std::get<1>(rhs)) {
+            return true;
+          } else if (*std::get<1>(lhs) > *std::get<1>(rhs)) {
+            return false;
+          } else {
+            return std::get<2>(lhs) < std::get<2>(rhs);
+          }
+        }
       }
     };
 
     std::set<node_ptr, compare> nodes_;
-    std::set<connection> connections_;
+    std::set<connection, compare> connections_;
 
     // helper function
     bool IsEdge(const N &src, const N &dst, const E &w);

@@ -1,3 +1,5 @@
+#include <algorithm>
+
 
 // typename needed before vector: https://stackoverflow.com/a/20934322/9494810
 template<typename N, typename E>
