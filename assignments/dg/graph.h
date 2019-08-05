@@ -11,19 +11,26 @@ namespace gdwg {
 template <typename N, typename E>
 class Graph {
  public:
+  // node pointer is shared for not storing duplications of node in connections
   using node_ptr = std::shared_ptr<N>;
+
+  // connection is records of edges, storing {src, dst, weight} as a tuple
   using connection = std::tuple<node_ptr, node_ptr, E>;
 
+  // iterator
   class const_iterator {
+    // friend for outer class accessing private underlying iterator
     friend class Graph;
 
    public:
+    // for minimum iterator
     using iterator_category = std::bidirectional_iterator_tag;
     using value_type = std::tuple<N, N, E>;
     using reference = std::tuple<const N&, const N&, const E&>;
     using pointer = std::tuple<const N&, const N&, const E&>;
     using difference_type = int;
 
+    // constructor, takes in an iterator (underlying connection iterator)
     explicit const_iterator(typename std::set<connection>::const_iterator it) : it_{it} {}
 
     const_iterator& operator++();
@@ -45,9 +52,11 @@ class Graph {
     }
 
    private:
+    // storing the iterator of connections_
     typename std::set<connection>::const_iterator it_;
   };
 
+  // reverse the iterator
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
   Graph() = default;
@@ -165,25 +174,21 @@ class Graph {
     return out;
   }
 
-  void test() {
-    for (auto i : nodes_) {
-      std::cout << *i << std::endl;
-    }
-    for (auto i : connections_) {
-      std::cout << *(std::get<0>(i)) << *(std::get<1>(i)) << std::get<2>(i) << std::endl;
-    }
-  }
-
  private:
+  // comparison for sets
   struct compare {
+    // this enables comparison between two different parameters
     using is_transparent = void;
 
+    // comparisons for node_ptr
     bool operator()(const node_ptr& lhs, const node_ptr& rhs) const { return *lhs < *rhs; }
 
     bool operator()(const node_ptr& lhs, const N& rhs) const { return *lhs < rhs; }
 
     bool operator()(const N& lhs, const node_ptr& rhs) const { return lhs < *rhs; }
 
+    // comparison between connections
+    // first compare src, then dst, finally weight
     bool operator()(const connection& lhs, const connection& rhs) const {
       if (*std::get<0>(lhs) < *std::get<0>(rhs)) {
         return true;
@@ -204,9 +209,10 @@ class Graph {
   std::set<node_ptr, compare> nodes_;
   std::set<connection, compare> connections_;
 
-  // helper function
+  // helper function, return if the edge exist
   bool IsEdge(const N& src, const N& dst, const E& w);
 
+  // helper function, return if node is in a connection
   bool NodeInConnection(const connection& conn, const N& node);
 };
 
