@@ -2,10 +2,14 @@
 
   == Explanation and rational of testing ==
 
- The design of the test is modularised. There are tests related to insertion of nodes and edges,
- and there ar tests related to deletion of nodes and edges, and there are also tests about
- iterators as well as outputs and equal operators.
- There are also many of edge test cases and test cases against exceptions.
+ The design of the test is modularised.
+ There are tests related to insertion of nodes and edges.
+ There are tests related to deletion of nodes and edges.
+ There are also tests about iterators.
+ There are tests related to outputs as well as equal operators.
+ Each test scenario contains tests from the most simple one to complicated ones.
+ Many of the test cases are for exceptions.
+ Many of the test cases are designed for edge cases.
 
 */
 
@@ -17,6 +21,7 @@
 #include "assignments/dg/graph.h"
 #include "catch.h"
 
+// these are heavily used in this test file
 using gdwg::Graph;
 using std::string;
 using std::tuple;
