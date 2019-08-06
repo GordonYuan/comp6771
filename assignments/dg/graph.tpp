@@ -195,6 +195,11 @@ void gdwg::Graph<N, E>::Clear() {
 
 template <typename N, typename E>
 bool gdwg::Graph<N, E>::IsConnected(const N& src, const N& dst) const {
+  if (!IsNode(src) || !IsNode(dst)) {
+    throw std::runtime_error(
+        "Cannot call Graph::IsConnected if src or dst node don't exist in the graph");
+  }
+
   // only care if src is connected to dst
   // ignore weight
   return std::find_if(connections_.begin(), connections_.end(),

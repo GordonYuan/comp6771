@@ -1,6 +1,7 @@
 #ifndef ASSIGNMENTS_DG_GRAPH_H_
 #define ASSIGNMENTS_DG_GRAPH_H_
 
+#include <iostream>
 #include <memory>
 #include <set>
 #include <tuple>
