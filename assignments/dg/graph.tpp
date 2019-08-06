@@ -133,8 +133,27 @@ bool gdwg::Graph<N, E>::Replace(const N& oldData, const N& newData) {
     throw std::runtime_error("Cannot call Graph::Replace on a node that doesn't exist");
   }
 
-  DeleteNode(oldData);
   InsertNode(newData);
+  auto newDataPtr = *nodes_.find(newData);
+
+  // change connections that contains oldData
+  std::vector<connection> changed;
+  for (auto it = connections_.begin(); it != connections_.end();) {
+    if (*std::get<0>(*it) == newData) {
+      connection conn = {newDataPtr, std::get<1>(*it), std::get<2>(*it)};
+      it = connections_.erase(it);
+    } else if (*std::get<1>(*it) == newData) {
+      connection conn = {std::get<0>(*it), newDataPtr, std::get<2>(*it)};
+      it = connections_.erase(it);
+    } else {
+      ++it;
+    }
+  }
+  for (auto& conn : changed) {
+    InsertEdge(*std::get<0>(conn), *std::get<1>(conn), std::get<2>(conn));
+  }
+
+  DeleteNode(oldData);
 
   return true;
 }
@@ -153,7 +172,7 @@ void gdwg::Graph<N, E>::MergeReplace(const N& oldData, const N& newData) {
   // store all changed connection to a temp vector and remove them from connections
   // add these connections from temp vector to this.connections
   // implicitly removes duplications
-  std::vector<connection> changed_connections;
+  std::vector<connection> changed_connections{};
   for (auto it = connections_.begin(); it != connections_.end();) {
     connection conn = *it;
     bool found = false;
@@ -356,7 +375,7 @@ const typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::const_iterat
 operator++(int) {
   // post-increment, make a copy and increment the copy
   gdwg::Graph<N, E>::const_iterator it{*this};
-  ++it;
+  ++(*this);
   return it;
 }
 
@@ -372,7 +391,7 @@ const typename gdwg::Graph<N, E>::const_iterator gdwg::Graph<N, E>::const_iterat
 operator--(int) {
   // post-decrement, make a copy and decrement the copy
   gdwg::Graph<N, E>::const_iterator it{*this};
-  --it;
+  --(*this);
   return it;
 }
 
