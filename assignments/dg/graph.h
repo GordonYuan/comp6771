@@ -106,7 +106,7 @@ class Graph {
 
   std::vector<E> GetWeights(const N& src, const N& dst) const;
 
-  const_iterator find(const N&, const N&, const E&);
+  const_iterator find(const N&, const N&, const E&) const;
 
   bool erase(const N& src, const N& dst, const E& w);
 
@@ -128,7 +128,7 @@ class Graph {
 
   const_reverse_iterator rend() const noexcept;
 
-  friend bool operator==(const gdwg::Graph<N, E>& lhs, const gdwg::Graph<N, E>& rhs) {
+  friend bool operator==(const gdwg::Graph<N, E>& lhs, const gdwg::Graph<N, E>& rhs) noexcept {
     if (lhs.nodes_.size() != rhs.nodes_.size() ||
         lhs.connections_.size() != rhs.connections_.size()) {
       return false;
@@ -157,7 +157,7 @@ class Graph {
     return true;
   }
 
-  friend bool operator!=(const gdwg::Graph<N, E>& lhs, const gdwg::Graph<N, E>& rhs) {
+  friend bool operator!=(const gdwg::Graph<N, E>& lhs, const gdwg::Graph<N, E>& rhs) noexcept {
     return !(lhs == rhs);
   }
 
@@ -207,14 +207,17 @@ class Graph {
     }
   };
 
+  // underlying data structure
+  // all nodes are stored as shared pointers in a set
+  // all edges are stored with src shared_ptr and dst shared_ptr as tuples in a set
   std::set<node_ptr, compare> nodes_;
   std::set<connection, compare> connections_;
 
   // helper function, return if the edge exist
-  bool IsEdge(const N& src, const N& dst, const E& w);
+  bool IsEdge(const N& src, const N& dst, const E& w) const noexcept;
 
   // helper function, return if node is in a connection
-  bool NodeInConnection(const connection& conn, const N& node);
+  bool NodeInConnection(const connection& conn, const N& node) const noexcept;
 };
 
 }  // namespace gdwg

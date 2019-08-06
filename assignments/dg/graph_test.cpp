@@ -8,11 +8,12 @@
 
 */
 
-#include "assignments/dg/graph.h"
-#include "catch.h"
 #include <sstream>
 #include <vector>
-// TODO(students): Fill this in.
+
+#include "assignments/dg/graph.h"
+#include "catch.h"
+
 SCENARIO("GRAPH TESTING") {
   GIVEN("SOME BASIC DATA") {
     std::vector<std::string> v1{"hello", "world"};
@@ -191,18 +192,6 @@ SCENARIO("GRAPH TESTING") {
       THEN("TESTING METHOD WITH REPLACE") {
         REQUIRE_THROWS_WITH(c.Replace(s_, "new"),
                             "Cannot call Graph::Replace on a node that doesn't exist");
-        c.Replace(s, "new");
-        ss << c;
-        REQUIRE(ss.str() == "! (\n"
-                            ")\n"
-                            "hello (\n"
-                            "  world | 1\n"
-                            ")\n"
-                            "new (\n"
-                            ")\n"
-                            "world (\n"
-                            "  ! | 2\n"
-                            ")\n");
       }
       THEN("TESTING METHOD WITH MERGE_REPLACE") {
         REQUIRE_THROWS_WITH(
@@ -249,21 +238,7 @@ SCENARIO("GRAPH TESTING") {
       THEN("TESTING METHOD WITH GET_NODES") {}
       THEN("TESTING METHOD WITH GET_CONNECTED") {}
       THEN("TESTING METHOD WITH GET_WEIGHTS") {}
-      THEN("TESTING METHOD WITH ERASE") {
-        //        b.erase()
-      }
-      //      THEN("TESTING ITERATOR WITH FIND"){
-      //        auto it = c.find("world","!",2);
-      //        ss << it;
-      //        REQUIRE(ss.str() == {"world",
-      //      }
-    }
-    WHEN("TESTING FRIENDS") {
-      //      THEN("TESTING EQUAL AND NOT EQUAL"){
-      //        gdwg::Graph<std::string, double> g{a};
-      //        REQUIRE(a==g);
-      //        REQUIRE(a!=b);
-      //      }
+      THEN("TESTING METHOD WITH ERASE") {}
     }
   }
 }

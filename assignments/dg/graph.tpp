@@ -90,7 +90,7 @@ bool gdwg::Graph<N, E>::InsertEdge(const N& src, const N& dst, const E& w) {
 }
 
 template <typename N, typename E>
-bool gdwg::Graph<N, E>::IsEdge(const N& src, const N& dst, const E& w) {
+bool gdwg::Graph<N, E>::IsEdge(const N& src, const N& dst, const E& w) const noexcept {
   // edge should have same weight and src and dst
   return std::find_if(connections_.begin(), connections_.end(),
                       [&, src, dst, w](connection const& connect) {
@@ -266,14 +266,14 @@ std::vector<E> gdwg::Graph<N, E>::GetWeights(const N& src, const N& dst) const {
 }
 
 template <typename N, typename E>
-bool gdwg::Graph<N, E>::NodeInConnection(const connection& conn, const N& node) {
+bool gdwg::Graph<N, E>::NodeInConnection(const connection& conn, const N& node) const noexcept {
   // if eigher src or dst equals node, return true
   return *(std::get<0>(conn)) == node || *(std::get<1>(conn)) == node;
 }
 
 template <typename N, typename E>
 typename gdwg::Graph<N, E>::const_iterator
-gdwg::Graph<N, E>::find(const N& src, const N& dst, const E& weight) {
+gdwg::Graph<N, E>::find(const N& src, const N& dst, const E& weight) const {
   // iterate through and reutrn if found
   for (auto it = cbegin(); it != cend(); ++it) {
     if (std::get<0>(*it) == src && std::get<1>(*it) == dst && std::get<2>(*it) == weight) {
