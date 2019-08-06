@@ -133,11 +133,8 @@ bool gdwg::Graph<N, E>::Replace(const N& oldData, const N& newData) {
     throw std::runtime_error("Cannot call Graph::Replace on a node that doesn't exist");
   }
 
-  // *it pointer to node
-  // **it node
-  // only need to change the value in the shared pointer
-  auto it = nodes_.find(oldData);
-  **it = newData;
+  DeleteNode(oldData);
+  InsertNode(newData);
 
   return true;
 }
