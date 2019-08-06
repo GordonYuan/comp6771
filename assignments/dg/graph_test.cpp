@@ -4,7 +4,8 @@
 
  The design of the test is modularised. There are tests related to insertion of nodes and edges,
  and there ar tests related to deletion of nodes and edges, and there are also tests about
- iterators as well as outputs. There are lots of edge cases and tests against exceptions.
+ iterators as well as outputs and equal operators.
+ There are also many of edge test cases and test cases against exceptions.
 
 */
 
@@ -21,7 +22,7 @@ using std::string;
 using std::tuple;
 using std::vector;
 
-SCENARIO("Test constructors and assignments") {
+SCENARIO("Test regular constructors") {
   GIVEN("No arguments") {
     WHEN("Construct an empty graph") {
       Graph<int, int> g;
@@ -87,7 +88,9 @@ SCENARIO("Test constructors and assignments") {
       }
     }
   }
+}
 
+SCENARIO("Test copy/move constructor") {
   GIVEN("a graph with some nodes and edges") {
     vector<tuple<string, string, int>> v;
     tuple<string, string, int> t1{"a", "b", 2};
@@ -136,7 +139,9 @@ SCENARIO("Test constructors and assignments") {
       }
     }
   }
+}
 
+SCENARIO("Test copy/move assignments") {
   GIVEN("a graph with some nodes and edges, and another empty graph") {
     vector<tuple<string, string, int>> v;
     tuple<string, string, int> t1{"a", "b", 2};
@@ -188,7 +193,7 @@ SCENARIO("Test constructors and assignments") {
   }
 }
 
-SCENARIO("Test node manipulation methods") {
+SCENARIO("Test node insertion methods") {
   GIVEN("an empty graph") {
     Graph<int, int> g;
     WHEN("insert a node") {
@@ -232,7 +237,9 @@ SCENARIO("Test node manipulation methods") {
       THEN("the node can no longer be found in the graph") { REQUIRE_FALSE(g.IsNode(1)); }
     }
   }
+}
 
+SCENARIO("Test node deletion methods") {
   GIVEN("a graph with many nodes") {
     Graph<int, int> g;
     g.InsertNode(1);
@@ -276,7 +283,9 @@ SCENARIO("Test node manipulation methods") {
       }
     }
   }
+}
 
+SCENARIO("Test node replace methods") {
   GIVEN("a graph with one nodes") {
     Graph<int, int> g;
     g.InsertNode(1);
@@ -338,7 +347,9 @@ SCENARIO("Test node manipulation methods") {
       }
     }
   }
+}
 
+SCENARIO("Test node clear and getter methods") {
   GIVEN("a graph with some nodes") {
     Graph<int, int> g;
     g.InsertNode(1);
@@ -551,7 +562,7 @@ SCENARIO("Test replace and merge replace methods with edges") {
   }
 }
 
-SCENARIO("Test iterators") {
+SCENARIO("Test begin iterators and dereferences") {
   GIVEN("an graph with no edge") {
     Graph<int, char> g{1, 2, 3};
     WHEN("get its begin iterators") {
@@ -577,7 +588,9 @@ SCENARIO("Test iterators") {
       }
     }
   }
+}
 
+SCENARIO("Test iterator increments/decrements") {
   GIVEN("an graph with two edges") {
     Graph<int, char> g{1, 2, 3};
     g.InsertEdge(1, 2, 'a');
@@ -753,23 +766,99 @@ SCENARIO("Test output functions") {
       g.InsertEdge(1, 3, 'a');
       g.InsertEdge(4, 2, 'e');
 
-      WHEN("get its output") {
+      THEN("its output is correctly streamed in sorted order") {
         std::stringstream ss;
         ss << g;
-        THEN("output is correct") {
-          REQUIRE(ss.str() == "1 (\n"
-                              "  3 | a\n"
-                              "  3 | c\n"
-                              ")\n"
-                              "2 (\n"
-                              "  4 | b\n"
-                              ")\n"
-                              "3 (\n"
-                              ")\n"
-                              "4 (\n"
-                              "  2 | e\n"
-                              ")\n");
-        }
+        REQUIRE(ss.str() == "1 (\n"
+                            "  3 | a\n"
+                            "  3 | c\n"
+                            ")\n"
+                            "2 (\n"
+                            "  4 | b\n"
+                            ")\n"
+                            "3 (\n"
+                            ")\n"
+                            "4 (\n"
+                            "  2 | e\n"
+                            ")\n");
+      }
+    }
+  }
+}
+
+SCENARIO("Test equal operators") {
+  GIVEN("two empty graphs") {
+    Graph<int, char> g1;
+    Graph<int, char> g2;
+    WHEN("inserting same nodes in same order to two graphs") {
+      g1.InsertNode(1);
+      g1.InsertNode(2);
+      g1.InsertNode(3);
+      g2.InsertNode(1);
+      g2.InsertNode(2);
+      g2.InsertNode(3);
+      THEN("two graphs are equal") {
+        REQUIRE(g1 == g2);
+        REQUIRE_FALSE(g1 != g2);
+      }
+    }
+  }
+
+  GIVEN("two empty graphs") {
+    Graph<int, char> g1;
+    Graph<int, char> g2;
+    WHEN("inserting same nodes in different orders to two graphs") {
+      g1.InsertNode(1);
+      g1.InsertNode(2);
+      g1.InsertNode(3);
+      g2.InsertNode(3);
+      g2.InsertNode(1);
+      g2.InsertNode(2);
+      THEN("two graphs are equal") {
+        REQUIRE(g1 == g2);
+        REQUIRE_FALSE(g1 != g2);
+      }
+    }
+  }
+
+  GIVEN("two graphs with same nodes") {
+    Graph<int, char> g1{1, 2, 3};
+    Graph<int, char> g2{1, 2, 3};
+    WHEN("inserting same edges in same order to two graphs") {
+      g1.InsertEdge(1, 2, 'a');
+      g1.InsertEdge(2, 3, 'b');
+      g2.InsertEdge(1, 2, 'a');
+      g2.InsertEdge(2, 3, 'b');
+      THEN("two graphs are equal") {
+        REQUIRE(g1 == g2);
+        REQUIRE_FALSE(g1 != g2);
+      }
+    }
+  }
+
+  GIVEN("two graphs with same nodes") {
+    Graph<int, char> g1{1, 2, 3};
+    Graph<int, char> g2{1, 2, 3};
+    WHEN("inserting same edges in dufferent orders to two graphs") {
+      g1.InsertEdge(1, 2, 'a');
+      g1.InsertEdge(2, 3, 'b');
+      g2.InsertEdge(2, 3, 'b');
+      g2.InsertEdge(1, 2, 'a');
+      THEN("two graphs are equal") {
+        REQUIRE(g1 == g2);
+        REQUIRE_FALSE(g1 != g2);
+      }
+    }
+  }
+
+  GIVEN("two empty graphs") {
+    Graph<int, char> g1;
+    Graph<int, char> g2;
+    WHEN("inserting same data to one of the graph to make the different") {
+      g2.InsertNode(2);
+      THEN("two graphs are not equal") {
+        REQUIRE_FALSE(g1 == g2);
+        REQUIRE(g1 != g2);
       }
     }
   }
